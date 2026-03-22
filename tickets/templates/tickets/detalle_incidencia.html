@@ -1,0 +1,401 @@
+{% extends 'tickets/base.html' %}
+{% load static %}
+
+{% block title %}Incidencia #{{ incidencia.id|stringformat:"04d" }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/detalle_incidencia.css' %}">
+
+{% endblock %}
+
+{% block header_title %}
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+    <div>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-1">
+                <li class="breadcrumb-item"><a href="{% url 'index' %}" class="text-decoration-none text-muted">Tickets</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Detalle</li>
+            </ol>
+        </nav>
+        <h2 class="h3 mb-0 fw-extrabold text-dark d-flex align-items-center">
+            Ticket #{{ incidencia.id|stringformat:"04d" }}
+            <span id="badge-estado" class="ms-3 badge rounded-pill fs-6 py-2 px-3 
+                {% if incidencia.estado.name == 'Pendiente' %}bg-warning-subtle text-warning-emphasis border border-warning
+                {% elif incidencia.estado.name == 'En Proceso' %}bg-primary-subtle text-primary-emphasis border border-primary
+                {% elif incidencia.estado.name == 'Resuelto' %}bg-success-subtle text-success-emphasis border border-success
+                {% elif incidencia.estado.name == 'Cerrado' %}bg-secondary-subtle text-secondary-emphasis border border-secondary
+                {% endif %}">
+                {{ incidencia.estado.name }}
+            </span>
+        </h2>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{% if request.user.role == 'administrador' %}{% url 'dashboard' %}{% else %}{% url 'index' %}{% endif %}" 
+        class="btn btn-light border-0 shadow-sm rounded-pill px-4 fw-bold">
+            <i class="bi bi-arrow-left me-2"></i>
+            Volver al {% if request.user.role == 'administrador' %}Panel{% else %}Listado{% endif %}
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div id="detalle-wrapper">
+    {# AVISO SI EL TICKET FUE REABIERTO #}
+    {# Solo mostrar si el usuario NO es el creador (es decir, mostrar al técnico/admin) #}
+    {% if incidencia.estado.name == 'En Proceso' and incidencia.solucion_aplicada and incidencia.creador != request.user %}
+    <div class="alert alert-reabierto shadow-sm mb-4 d-flex align-items-center p-4 rounded-4">
+        <i class="bi bi-exclamation-triangle-fill fs-3 me-3 text-warning"></i>
+        <div>
+            <h5 class="fw-bold mb-1">Incidencia Reabierta</h5>
+            <p class="mb-0">El solicitante no ha quedado conforme. Por favor, revisa los comentarios y actualiza la resolución.</p>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card card-modern shadow-sm mb-4">
+                <div class="card-body p-4 p-md-5">
+                    <div class="mb-5">
+                        <h5 class="info-label">Descripción de la Incidencia</h5>
+                        <h3 class="fw-bold text-dark lh-base">{{ incidencia.descripcion }}</h3>
+                    </div>
+
+                    <div class="row g-4 mb-5">
+                        <div class="col-md-4">
+                            <div class="info-label">Categoría</div>
+                            <div class="d-flex align-items-center">
+                                <div class="p-2 bg-light rounded-3 me-2 text-primary"><i class="bi bi-tag-fill"></i></div>
+                                <span class="info-value">{{ incidencia.categoria|default:"Soporte TI" }}</span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="info-label">Prioridad</div>
+                            <div class="priority-pill {% if incidencia.prioridad == 'Crítica' %}priority-critica{% elif incidencia.prioridad == 'Alta' %}priority-alta{% elif incidencia.prioridad == 'Media' %}priority-media{% else %}priority-baja{% endif %}">
+                                <i class="bi bi-fire me-2"></i>{{ incidencia.prioridad|upper }}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="info-label">Ubicación / Área</div>
+                            <div class="d-flex align-items-center text-truncate">
+                                <div class="p-2 bg-light rounded-3 me-2 text-danger"><i class="bi bi-geo-alt-fill"></i></div>
+                                <span class="info-value">{{ incidencia.area.name|default:"Sede Central" }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {# PUNTO 1: DATOS DE ASIGNACIÓN #}
+                    {% if incidencia.tecnico_asignado and request.user.role != 'trabajador' %}
+                    <div class="card border-0 bg-light rounded-4 p-4 mb-4 border-start border-primary border-4 shadow-sm">
+                        <h5 class="text-primary fw-bold mb-3">
+                            <i class="bi bi-info-circle-fill me-2"></i>Información de Asignación
+                        </h5>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="text-muted small fw-bold text-uppercase">Fecha Programada:</div>
+                                <div class="d-flex align-items-center mt-1">
+                                    <i class="bi bi-calendar3 me-2 text-primary"></i>
+                                    <span class="fw-bold text-dark">{{ incidencia.fecha_atencion|date:"d/m/Y"|default:"Pendiente" }}</span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="text-muted small fw-bold text-uppercase">Hora Estimada:</div>
+                                <div class="d-flex align-items-center mt-1">
+                                    <i class="bi bi-clock me-2 text-primary"></i>
+                                    <span class="fw-bold text-dark">{{ incidencia.hora_atencion|time:"H:i"|default:"Pendiente" }}</span>
+                                </div>
+                            </div>
+
+                            {# MOSTRAR OBSERVACIONES INTERNAS AL TÉCNICO #}
+                            {% if incidencia.observaciones_internas %}
+                            <div class="col-12 mt-3">
+                                <div class="p-3 bg-white rounded-3 border">
+                                    <div class="text-muted small fw-bold text-uppercase mb-1">Nota del Administrador para el Técnico:</div>
+                                    <p class="mb-0 text-dark" style="font-style: italic;">
+                                        "{{ incidencia.observaciones_internas }}"
+                                    </p>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {# EVIDENCIA INICIAL (LA QUE SUBE EL TRABAJADOR) #}
+                    {% if incidencia.imagen_adjunta %}
+                    <div class="evidencia-grid position-relative mb-5">
+                        <div class="info-label mb-2">Evidencia del Problema</div>
+                        <img src="{{ incidencia.imagen_adjunta.url }}" 
+                            class="img-fluid img-preview w-100 shadow-sm"
+                            onclick="openLightbox('{{ incidencia.imagen_adjunta.url }}')"
+                            style="max-height: 400px; object-fit: cover; border: 1px solid #eee; cursor: pointer; border-radius: 15px;">
+                    </div>
+                    {% endif %}
+
+                    {# SECCIÓN DE SOLUCIÓN Y ACCIONES DEL SOLICITANTE #}
+                    {% if incidencia.estado.name == 'Resuelto' or incidencia.estado.name == 'Cerrado' %}
+                        <div class="card border-0 bg-success bg-opacity-10 rounded-4 p-4 mt-5 border-start border-success border-4 shadow-sm">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <h5 class="text-success fw-bold mb-0"><i class="bi bi-patch-check-fill me-2"></i>Solución Implementada</h5>
+                                <span class="badge bg-success">{{ incidencia.estado.name }}</span>
+                            </div>
+                            <p class="text-dark-emphasis mb-4 fs-5">{{ incidencia.solucion_aplicada }}</p>
+                            
+                            {# EVIDENCIA DE SOLUCIÓN (LA QUE SUBE EL TÉCNICO) #}
+                            {% if incidencia.evidencia_solucion %}
+                            <div class="mb-4">
+                                <div class="text-success small fw-bold text-uppercase mb-2">Evidencia de resolución:</div>
+                                <img src="{{ incidencia.evidencia_solucion.url }}" 
+                                     class="img-fluid rounded-3 shadow-sm border border-success border-opacity-25" 
+                                     style="max-height: 250px; cursor: pointer;"
+                                     onclick="openLightbox('{{ incidencia.evidencia_solucion.url }}')">
+                            </div>
+                            {% endif %}
+                            
+                            {# ACCIONES DEL SOLICITANTE #}
+                            {% if incidencia.creador == request.user and incidencia.estado.name == 'Resuelto' %}
+                            <div class="solicitante-actions mt-3 p-3 bg-white rounded-3 border border-success border-opacity-50">
+                                <p class="small text-muted mb-3 fw-bold text-uppercase text-center">¿Se solucionó su problema?</p>
+                                <div class="d-flex flex-wrap gap-2 justify-content-center">
+                                    <button class="btn btn-success px-4 rounded-pill shadow-sm"
+                                            onclick="confirmarCierre('{{ incidencia.id }}')">
+                                        <i class="bi bi-check-lg me-1"></i> Sí, cerrar ticket
+                                    </button>
+                                    
+                                    <a href="{% url 'reabrir_incidencia' incidencia.id %}" 
+                                       class="btn btn-outline-danger px-4 rounded-pill">
+                                        <i class="bi bi-arrow-counterclockwise me-1"></i> No, reabrir ticket
+                                    </a>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+
+                    {# ELIMINAMOS: request.user.role == 'tecnico' #}
+                    {# MANTENEMOS: que el usuario sea el asignado y que el estado permita resolver #}
+
+                    {% if incidencia.tecnico_asignado == request.user and incidencia.estado.name != 'Cerrado' and incidencia.estado.name != 'Resuelto' %}
+                        {# FORMULARIO PARA QUE EL ENCARGADO (TÉCNICO O ADMIN ASIGNADO) RESUELVA #}
+                        <div class="mt-5 p-4 rounded-4 border-dashed bg-light border-2" style="border: 2px dashed #cbd5e1;">
+                            <h5 class="fw-bold mb-4 text-dark">
+                                <i class="bi bi-pencil-square me-2 text-primary"></i>
+                                {% if incidencia.solucion_aplicada %}Actualizar Resolución{% else %}Completar Atención{% endif %}
+                            </h5>
+                            
+                            <form method="post" action="{% url 'resolver_incidencia' incidencia.id %}" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                <div class="mb-4">
+                                    <label for="solucion_aplicada" class="fw-bold mb-2">Detalle de la Solución</label>
+                                    <textarea id="solucion_aplicada" name="solucion_aplicada" class="form-control border-0 shadow-sm" rows="4" placeholder="Explique qué acciones se realizaron..." required>{{ incidencia.solucion_aplicada|default:'' }}</textarea>
+                                </div>
+                                
+                                <div class="row align-items-center">
+                                    <div class="col-md-7 mb-3 mb-md-0">
+                                        <label class="info-label" for="evidencia_solucion">Foto de evidencia (opcional)</label>
+                                        <input type="file" 
+                                            name="evidencia_solucion" 
+                                            id="evidencia_solucion"
+                                            class="form-control form-control-sm border-0 shadow-sm"
+                                            accept="image/png, image/jpeg, image/jpg"> </div>
+                                    <div class="col-md-5">
+                                        <button type="submit" class="btn btn-success w-100 fw-bold rounded-pill py-3 shadow">
+                                            <i class="bi bi-check-circle me-2"></i> Marcar como Resuelto
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            {# SECCIÓN DE COMENTARIOS #}
+            <div class="card card-modern shadow-sm">
+                <div class="card-body p-0">
+                    <div class="d-flex align-items-center gap-2 px-4 py-3 border-bottom">
+                        <i class="bi bi-chat-dots-fill text-primary"></i>
+                        <h6 class="m-0 fw-bold text-dark">Seguimiento y Comentarios</h6>
+                        <span id="comentario-count" class="badge bg-primary-subtle text-primary-emphasis ms-auto">
+                            {{ comentarios.count }}
+                        </span>
+                    </div>
+
+                    <div id="comentarios-scroll-area" style="height: 400px; overflow-y: auto; background-color: #f8f9fa;">
+                        <div id="comentarios-lista-inner" hx-get="{{ request.path }}" hx-trigger="every 10s" hx-swap="innerHTML">
+                            {% include 'tickets/partials/_comentarios_list.html' %}
+                        </div>
+                    </div>
+
+                    {# BLOQUEO DE CHAT SI ESTÁ CERRADO #}
+                    <div class="px-4 py-3 border-top bg-light">
+                        {% if incidencia.estado.name != 'Cerrado' %}
+                            <form hx-post="{{ request.path }}" hx-target="#comentarios-lista-inner" hx-on::after-request="if(event.detail.successful) this.reset();">
+                                {% csrf_token %}
+                                <div class="d-flex gap-2">
+                                    <textarea name="texto_comentario" class="form-control border-0 shadow-sm rounded-3" placeholder="Escribe un mensaje..." rows="1" style="resize: none;" required></textarea>
+                                    <button type="submit" class="btn btn-primary rounded-circle shadow-sm" style="width: 45px; height: 45px;">
+                                        <i class="bi bi-send-fill"></i>
+                                    </button>
+                                </div>
+                            </form>
+                        {% else %}
+                            <div class="chat-bloqueado p-3 text-center">
+                                <i class="bi bi-lock-fill me-2"></i> Esta incidencia está <strong>Cerrada</strong>. El chat no admite más comentarios.
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# COLUMNA LATERAL #}
+        <div class="col-lg-4">
+            {# PANEL DE GESTIÓN (ADMIN) #}
+            {# MODIFICACIÓN: Se oculta si el estado es 'Resuelto' o 'Cerrado' #}
+            {% if user.role == 'administrador' and incidencia.estado.name != 'Cerrado' and incidencia.estado.name != 'Resuelto' %}
+            <div class="card card-modern shadow-sm border-0 mb-4 overflow-hidden" style="background: linear-gradient(135deg, #1e293b 0%, #334155 100%);">
+                <div class="card-body p-4 text-center">
+                    <div class="bg-warning text-dark p-3 rounded-circle d-inline-flex mb-3 shadow">
+                        <i class="bi bi-shield-lock-fill fs-4"></i>
+                    </div>
+                    <h5 class="text-white fw-bold">Panel de Gestión</h5>
+                    <p class="text-white-50 small mb-3">Modifica la prioridad, asignación o programación de este ticket.</p>
+                    <a href="{% url 'gestionar_incidencia' incidencia.id %}" class="btn btn-warning w-100 fw-bold shadow-sm rounded-pill py-2">
+                        Configurar Ticket <i class="bi bi-gear-fill ms-2"></i>
+                    </a>
+                </div>
+            </div>
+            {% elif user.role == 'administrador' and incidencia.estado.name == 'Resuelto' %}
+            {# OPCIONAL: Mostrar un aviso de que está bloqueado #}
+            <div class="card shadow-sm border-0 mb-4 bg-light">
+                <div class="card-body p-3 text-center">
+                    <div class="text-success mb-2">
+                        <i class="bi bi-lock-fill fs-5"></i>
+                    </div>
+                    <span class="small fw-bold text-muted text-uppercase">Gestión Finalizada</span>
+                    <p class="small text-muted mb-0">El ticket ha sido resuelto. No se admiten cambios de configuración.</p>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="card card-personal shadow-sm mb-4">
+                <div class="card-header bg-white border-bottom py-3 px-4">
+                    <h6 class="mb-0 fw-bold">Personal Involucrado</h6>
+                </div>
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center mb-4">
+                        <div class="flex-shrink-0 me-3">
+                            {% if incidencia.creador.foto %}
+                                <img src="{{ incidencia.creador.foto.url }}" class="rounded-circle border" width="48" height="48">
+                            {% else %}
+                                <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold" width="48" height="48" style="width:48px; height:48px;">{{ incidencia.creador.username|slice:":1"|upper }}</div>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <span class="badge bg-light text-primary border mb-1" style="font-size:0.65rem">SOLICITANTE</span>
+                            <div class="fw-bold text-dark">{{ incidencia.creador.get_full_name|default:incidencia.creador.username }}</div>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0 me-3">
+                            {% if incidencia.tecnico_asignado.foto %}
+                                <img src="{{ incidencia.tecnico_asignado.foto.url }}" class="rounded-circle border" width="48" height="48">
+                            {% else %}
+                                <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center fw-bold" width="48" height="48" style="width:48px; height:48px;">
+                                    {% if incidencia.tecnico_asignado %}{{ incidencia.tecnico_asignado.username|slice:":1"|upper }}{% else %}<i class="bi bi-person"></i>{% endif %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <span class="badge bg-light text-success border mb-1" style="font-size:0.65rem">ESPECIALISTA TI</span>
+                            <div class="fw-bold text-dark">{{ incidencia.tecnico_asignado.get_full_name|default:"Sin asignar" }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    function confirmarCierre(id) {
+        Swal.fire({
+            title: '¿Confirmar solución?',
+            text: "Al cerrar el ticket, confirmas que el problema ha sido resuelto satisfactoriamente.",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#198754',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Sí, cerrar ticket',
+            cancelButtonText: 'Cancelar',
+            reverseButtons: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // CORRECCIÓN DE RUTA: Debe coincidir con tu path de urls.py
+                htmx.ajax('POST', `/incidencias/${id}/cerrar/`, {
+                    headers: {'X-CSRFToken': '{{ csrf_token }}'},
+                    swap: 'none' // No necesitamos cambiar HTML, solo ejecutar la acción
+                }).then(() => {
+                    // Opcional: Recargar para ver el badge de "Cerrado" y el chat bloqueado
+                    window.location.reload();
+                });
+            }
+        })
+    }
+
+    const scrollChat = () => {
+        const area = document.getElementById('comentarios-scroll-area');
+        if (area) area.scrollTop = area.scrollHeight;
+    }
+
+    // Ejecuta cada vez que HTMX termine de procesar algo
+    document.body.addEventListener('htmx:afterOnLoad', function(evt) {
+        if (evt.detail.target.id === "comentarios-lista-inner") {
+            scrollChat();
+        }
+    });
+
+    // Forzar al cargar
+    window.onload = scrollChat;
+
+    // Función para abrir la imagen en un lightbox con cierre completo
+    function openLightbox(src) {
+        const lightbox = document.createElement('div');
+        lightbox.className = 'lightbox';
+        
+        // Estilos dinámicos para no depender solo del CSS externo
+        Object.assign(lightbox.style, {
+            position: 'fixed',
+            top: '0',
+            left: '0',
+            width: '100%',
+            height: '100%',
+            background: 'rgba(0,0,0,0.9)',
+            zIndex: '9999',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'zoom-out'
+        });
+
+        lightbox.innerHTML = `
+            <span class="lightbox-close" style="position:absolute; top:20px; right:30px; color:white; font-size:40px; font-weight:bold; cursor:pointer;">&times;</span>
+            <img src="${src}" class="lightbox-content animate__animated animate__zoomIn" style="max-width:90%; max-height:90%; border-radius:10px; cursor:default;">
+        `;
+        
+        document.body.appendChild(lightbox);
+        document.body.style.overflow = 'hidden'; // Bloquea el scroll del fondo
+
+        lightbox.onclick = (e) => {
+            // Si hace clic en el fondo (clase lightbox) o en el botón de cerrar (clase lightbox-close)
+            if (e.target.classList.contains('lightbox') || e.target.classList.contains('lightbox-close')) {
+                document.body.removeChild(lightbox);
+                document.body.style.overflow = 'auto'; // Devuelve el scroll al cerrar
+            }
+        };
+    }
+</script>
+{% endblock %}

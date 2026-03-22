@@ -1,0 +1,421 @@
+/* ============================================================
+   VARIABLES Y COLORES
+   ============================================================ */
+:root {
+    --primary: #2563eb;
+    --primary-soft: #eff6ff;
+    --accent: #3b82f6;
+    --bg-body: #f8fafc;
+    --card-bg: #ffffff;
+    --ink-dark: #1e293b;
+    --ink-soft: #475569;
+    --ink-muted: #94a3b8;
+    --border-color: #e2e8f0;
+    --success: #10b981;
+    --danger: #ef4444;
+    --warning: #f59e0b;
+}
+
+/* ============================================================
+   LAYOUT PRINCIPAL
+   ============================================================ */
+body {
+    background-color: var(--bg-body);
+    color: var(--ink-dark);
+}
+
+.form-layout {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 1.5rem;
+    align-items: start;
+}
+
+/* Responsivo para móviles */
+@media (max-width: 992px) {
+    .form-layout {
+        grid-template-columns: 1fr;
+    }
+    .form-sidebar {
+        order: -1; /* Sidebar arriba en móviles */
+    }
+}
+
+/* ============================================================
+   CABECERA Y TARJETAS
+   ============================================================ */
+.header-icon {
+    width: 48px;
+    height: 48px;
+    background: var(--primary);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    font-size: 1.25rem;
+}
+
+.page-title {
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+.app-card {
+    background: var(--card-bg);
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    padding: 1.5rem;
+}
+
+/* ============================================================
+   SECCIONES DEL FORMULARIO
+   ============================================================ */
+.form-section {
+    margin-bottom: 2rem;
+}
+
+.form-section-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-weight: 600;
+    font-size: 1rem;
+    margin-bottom: 1.25rem;
+    color: var(--ink-dark);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.form-section-icon {
+    color: var(--primary);
+}
+
+.info-label {
+    display: block;
+    font-weight: 500;
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+    color: var(--ink-soft);
+}
+
+/* ============================================================
+   INPUTS Y SELECTS PERSONALIZADOS
+   ============================================================ */
+.input-group-app select,
+.input-group-app input,
+.input-group-app textarea {
+    width: 100%;
+    padding: 0.6rem 0.85rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background-color: #fff;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+}
+
+.input-group-app select:focus,
+.input-group-app textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px var(--primary-soft);
+}
+
+/* ============================================================
+   CHIPS DE CATEGORÍA
+   ============================================================ */
+.category-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.category-chip {
+    padding: 0.5rem 1rem;
+    border-radius: 100px;
+    background: #fff;
+    border: 1px solid var(--border-color);
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.category-chip:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+.category-chip.selected {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2);
+}
+
+/* ============================================================
+   TARJETAS DE PRIORIDAD
+   ============================================================ */
+.priority-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 1rem;
+}
+
+.priority-card {
+    padding: 1rem;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: white;
+}
+
+.prio-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin: 0 auto 0.5rem;
+    background: var(--ink-muted);
+}
+
+.priority-card[data-value="critica"] .prio-dot { background: var(--danger); }
+.priority-card[data-value="alta"] .prio-dot { background: var(--warning); }
+.priority-card[data-value="media"] .prio-dot { background: var(--accent); }
+.priority-card[data-value="baja"] .prio-dot { background: var(--success); }
+
+.priority-card:hover { transform: translateY(-2px); }
+
+.priority-card.selected {
+    border-color: var(--primary);
+    background: var(--primary-soft);
+}
+
+/* ============================================================
+   ZONA DE EVIDENCIA (UPLOAD)
+   ============================================================ */
+.evidence-zone {
+    border: 2px dashed var(--border-color);
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+}
+
+.evidence-zone:hover {
+    border-color: var(--primary);
+    background: var(--primary-soft);
+}
+
+.evidence-zone-icon {
+    font-size: 2rem;
+    color: var(--ink-muted);
+    margin-bottom: 1rem;
+}
+
+.evidence-zone input[type="file"] {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+
+/* ============================================================
+   BOX ADMINISTRADOR (LUXURY)
+   ============================================================ */
+.admin-luxury-box {
+    margin-top: 1.5rem;
+    padding: 1.5rem;
+    background: #1e293b;
+    border-radius: 16px;
+    color: white;
+}
+
+.admin-luxury-box .info-label { color: #94a3b8; }
+.admin-luxury-box .form-section-title { color: white; }
+
+.admin-luxury-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    padding-bottom: 1rem;
+}
+
+/* ============================================================
+   SIDEBAR: PROGRESO Y TIPS
+   ============================================================ */
+.progress-card, .tips-card {
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    border: 1px solid var(--border-color);
+    margin-bottom: 1rem;
+}
+
+.sidebar-section-title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    margin-bottom: 1.25rem;
+    color: var(--ink-dark);
+}
+
+.progress-step {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.progress-step-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.progress-step-dot.pending { background: var(--border-color); }
+.progress-step-dot.done { background: var(--success); box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1); }
+
+.progress-step-label { font-size: 0.85rem; }
+.progress-step-label.pending { color: var(--ink-muted); }
+.progress-step-label.done { color: var(--ink-dark); font-weight: 600; }
+
+.tip-item {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.tip-num {
+    background: var(--primary-soft);
+    color: var(--primary);
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.tip-text {
+    font-size: 0.8rem;
+    color: var(--ink-soft);
+    line-height: 1.4;
+}
+
+/* ============================================================
+   BOTONES
+   ============================================================ */
+.btn-new {
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.btn-new:hover {
+    background: #1d4ed8;
+    transform: translateY(-1px);
+    box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);
+}
+
+.form-actions-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+}
+
+/* ============================================================
+   ANIMACIÓN DE CARGA (SPINNER)
+   ============================================================ */
+.spinner-border-sm {
+    width: 1rem;
+    height: 1rem;
+    border-width: 0.2em;
+    display: none; /* Oculto por defecto */
+}
+
+/* Estado cuando el formulario se está enviando */
+.btn-new.loading {
+    background-color: var(--ink-muted) !important;
+    pointer-events: none;
+    opacity: 0.8;
+}
+
+.btn-new.loading .spinner-border-sm {
+    display: inline-block;
+}
+
+.btn-new.loading i, 
+.btn-new.loading span {
+    display: none; /* Ocultamos el texto e icono original */
+}
+
+.btn-new.loading::after {
+    content: "Procesando...";
+    margin-left: 0.5rem;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.spinner-border-sm {
+    border: 2px solid rgba(255,255,255,.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin .6s linear infinite;
+}
+
+.preview-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+#image-preview-element {
+    max-height: 150px;
+    max-width: 250px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 2px solid var(--primary-soft);
+}
+
+/* Efecto suave al aparecer */
+#file-name-preview {
+    position: relative;
+    z-index: 10; /* Esto lo pone al frente */
+}
+
+/* Y específicamente el botón de borrar */
+#file-name-preview button {
+    position: relative;
+    z-index: 11; /* Un nivel más arriba para capturar el clic */
+    pointer-events: auto !important;
+}
+
+/* Si tu {{ form.imagen_adjunta }} tiene un input con opacidad 0 que cubre todo: */
+.evidence-zone input[type="file"] {
+    z-index: 1;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}

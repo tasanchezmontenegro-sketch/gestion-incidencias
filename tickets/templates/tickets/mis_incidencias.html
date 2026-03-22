@@ -1,0 +1,260 @@
+{% extends 'tickets/base.html' %}
+{% load static %}
+
+{% block title %}Mis Incidencias{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/incidencias.css' %}">
+<style>
+    /* Ajuste para que las cards tengan una altura uniforme */
+    .ticket-card {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        transition: transform 0.2s;
+    }
+    .ticket-card:hover {
+        transform: translateY(-5px);
+    }
+</style>
+{% endblock %}
+
+{% block header_title %}
+<div class="d-flex align-items-center gap-3">
+    <div class="header-icon-bg">
+        <i class="bi bi-journal-text text-primary"></i>
+    </div>
+    <div>
+        <h3 class="mb-0 page-title">Mis Incidencias</h3>
+        <p class="text-muted small mb-0">Gestiona y da seguimiento a los reportes que has creado.</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+{% csrf_token %}
+<div class="toolbar mb-4">
+    <form method="GET" class="d-flex align-items-center w-100 gap-3">
+        <div class="search-wrap" style="flex:1; max-width:380px; position: relative;">
+            <input type="text" name="search" 
+                value="{{ request.GET.search|default:'' }}" 
+                placeholder="Buscar por ID o descripción..." 
+                class="form-control-custom"> 
+            
+            {% if request.GET.search %}
+                <a href="?" class="search-clear-btn">
+                    <i class="bi bi-x-circle-fill"></i>
+                </a>
+            {% endif %}
+
+            <button class="btn-search" type="submit">
+                <i class="bi bi-search"></i>
+            </button>
+        </div>
+        
+        <div class="ms-auto d-flex gap-2">
+            <div class="dropdown">
+                <button class="filter-btn dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    <i class="bi bi-filter"></i> 
+                    {% if request.GET.estado %}{{ request.GET.estado|capfirst }}{% else %}Estados{% endif %}
+                </button>
+                <ul class="dropdown-menu shadow border-0 p-2">
+                    <li>
+                        <a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="?search={{ request.GET.search|default:'' }}">
+                            <span class="dot" style="background:#94a3b8; width:8px; height:8px; border-radius:50%; display:inline-block;"></span>
+                            Todos
+                        </a>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="?search={{ request.GET.search|default:'' }}&estado=pendiente">
+                            <span class="dot" style="background:#f59e0b; width:8px; height:8px; border-radius:50%; display:inline-block;"></span>
+                            Pendiente
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="?search={{ request.GET.search|default:'' }}&estado=en proceso">
+                            <span class="dot" style="background:#2563eb; width:8px; height:8px; border-radius:50%; display:inline-block;"></span>
+                            En Proceso
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="?search={{ request.GET.search|default:'' }}&estado=resuelto">
+                            <span class="dot" style="background:#16a34a; width:8px; height:8px; border-radius:50%; display:inline-block;"></span>
+                            Resuelto
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item d-flex align-items-center gap-2 rounded-2" href="?search={{ request.GET.search|default:'' }}&estado=cerrado">
+                            <span class="dot" style="background:#64748b; width:8px; height:8px; border-radius:50%; display:inline-block;"></span>
+                            Cerrado
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            
+            <a href="{% url 'crear_incidencia' %}" class="btn-new">
+                <i class="bi bi-plus-lg"></i> Nuevo Reporte
+            </a>
+        </div>
+    </form>
+</div>
+
+<div class="row g-4">
+    {% for incidencia in incidencias %}
+        {% with estado_lower=incidencia.estado.name|lower %}
+        <div class="col-md-6 col-lg-4">
+            <div class="ticket-card {% if estado_lower == 'pendiente' %}state-pendiente{% elif estado_lower == 'en proceso' %}state-en-proceso{% elif estado_lower == 'resuelto' %}state-resuelto{% else %}state-cerrado{% endif %}">
+                <div class="card-body p-4 d-flex flex-column">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <span class="ticket-id">#{{ incidencia.id|stringformat:"04d" }}</span>
+                        <span class="status-badge {% if estado_lower == 'pendiente' %}badge-pendiente{% elif estado_lower == 'en proceso' %}badge-en-proceso{% elif estado_lower == 'resuelto' %}badge-resuelto{% else %}badge-cerrado{% endif %}">
+                            <span class="status-dot"></span>
+                            {{ incidencia.estado.name }}
+                        </span>
+                    </div>
+
+                    <h6 class="card-title-text mb-3 fw-bold">{{ incidencia.descripcion|truncatechars:85 }}</h6>
+
+                    <div class="meta-chips mb-4">
+                        <div class="meta-row">
+                            <i class="bi bi-person-gear"></i>
+                            <span>Técnico: <strong>{{ incidencia.tecnico_asignado.get_full_name|default:"Por asignar" }}</strong></span>
+                        </div>
+                        {% if incidencia.hora_programada_atencion and estado_lower != 'cerrado' %}
+                        <div class="meta-row mt-2">
+                            <i class="bi bi-clock-history"></i>
+                            <span>Cita: <strong>{{ incidencia.fecha_programada_atencion|date:"d/m" }}</strong> a las <strong>{{ incidencia.hora_programada_atencion|time:"H:i" }}</strong></span>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mt-auto pt-3 border-top">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="card-date text-muted small">
+                                <i class="bi bi-calendar3 me-1"></i> {{ incidencia.fecha_creacion|date:"d/m/Y" }}
+                            </span>
+                            
+                            <div class="d-flex gap-2">
+                                <a href="{% url 'detalle_incidencia' incidencia.id %}" class="btn btn-sm btn-light border" title="Ver detalles">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+
+                                {% if estado_lower == 'resuelto' %}
+                                    <a href="{% url 'reabrir_incidencia' incidencia.id %}" 
+                                       class="btn btn-sm btn-outline-danger" 
+                                       onclick="event.preventDefault(); confirmarReabertura(this);"
+                                       title="Aún tengo el problema">
+                                        <i class="bi bi-arrow-counterclockwise"></i>
+                                    </a>
+
+                                    <button class="btn btn-sm btn-success"
+                                            type="button"
+                                            data-url="{% url 'cerrar_incidencia' incidencia.id %}"
+                                            onclick="confirmarCierre(this)"
+                                            title="Todo quedó bien">
+                                        <i class="bi bi-check-lg"></i>
+                                    </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endwith %}
+            {% empty %}
+            <div class="col-12">
+                <div class="empty-state text-center py-5">
+                    <div class="empty-icon-wrap mb-3" style="font-size: 3rem; opacity: 0.3;">
+                        {% if request.GET.estado == 'cerrado' %}
+                            <i class="bi bi-check-all text-success"></i>
+                        {% elif request.GET.search %}
+                            <i class="bi bi-search text-muted"></i>
+                        {% else %}
+                            <i class="bi bi-inbox text-muted"></i>
+                        {% endif %}
+                    </div>
+                    
+                    <h3 class="h5 fw-bold text-dark">
+                        {% if request.GET.estado == 'cerrado' %}
+                            No hay tickets cerrados
+                        {% elif request.GET.search %}
+                            Sin coincidencias
+                        {% else %}
+                            Sin resultados
+                        {% endif %}
+                    </h3>
+                    
+                    <p class="text-muted mx-auto" style="max-width: 400px;">
+                        {% if request.GET.estado == 'cerrado' %}
+                            Aún no has finalizado ninguna incidencia. ¡Buen trabajo!
+                        {% elif request.GET.search %}
+                            No encontramos resultados para: <strong>"{{ request.GET.search }}"</strong>.
+                        {% else %}
+                            No se encontraron incidencias con los filtros aplicados.
+                        {% endif %}
+                    </p>
+
+                    {% if not request.GET.search and not request.GET.estado %}
+                        <a href="{% url 'crear_incidencia' %}" class="btn btn-primary rounded-pill px-4 mt-3">
+                            <i class="bi bi-plus-lg me-1"></i> Crear mi primer reporte
+                        </a>
+                    {% else %}
+                        <a href="?" class="btn btn-outline-secondary rounded-pill px-4 mt-3 btn-sm">
+                            Limpiar filtros
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+
+        {% endfor %}
+</div>
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    function confirmarReabertura(element) {
+        const urlReabrir = element.href;
+        Swal.fire({
+            title: '¿El problema continúa?',
+            text: "El ticket volverá al técnico para una nueva revisión.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: 'Sí, reabrir',
+            cancelButtonText: 'Cancelar',
+            reverseButtons: true,
+            customClass: { popup: 'rounded-4' }
+        }).then((result) => {
+            if (result.isConfirmed) window.location.href = urlReabrir;
+        });
+    }
+
+    function confirmarCierre(buttonElement) {
+        const urlCerrar = buttonElement.getAttribute('data-url');
+        Swal.fire({
+            title: '¿Confirmar solución?',
+            text: "¿Estás conforme con la atención recibida?",
+            icon: 'success',
+            showCancelButton: true,
+            confirmButtonColor: '#198754',
+            confirmButtonText: 'Sí, conforme',
+            cancelButtonText: 'Aún no',
+            reverseButtons: true,
+            customClass: { popup: 'rounded-4' }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                htmx.ajax('POST', urlCerrar, {
+                    target: buttonElement.closest('.col-md-6'),
+                    swap: 'delete',
+                    headers: { 'X-CSRFToken': csrftoken }
+                });
+            }
+        });
+    }
+</script>
+{% endblock %}
+{% endblock %}

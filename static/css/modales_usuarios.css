@@ -1,0 +1,228 @@
+/* ============================================================
+   MODALES DE USUARIO — Nuevo y Editar
+   Consistente con el sistema de diseño global
+   ============================================================ */
+
+/* --- Base del modal --- */
+.modal-content {
+    border: none !important;
+    border-radius: var(--radius-lg) !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12), 0 4px 16px rgba(0, 0, 0, 0.08) !important;
+    overflow: hidden;
+}
+
+/* --- Header del modal --- */
+.modal-header-app {
+    background: var(--ink);
+    padding: 1.25rem 1.5rem;
+    border-bottom: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.modal-header-app .modal-title {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 700;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    letter-spacing: -0.2px;
+}
+
+.modal-header-app .modal-title-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+}
+
+.modal-header-app .btn-close {
+    filter: invert(1);
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+.modal-header-app .btn-close:hover {
+    opacity: 1;
+}
+
+/* --- Body del modal --- */
+.modal-body-app {
+    padding: 1.5rem;
+    background: var(--surface);
+}
+
+/* --- Labels --- */
+.modal-body-app .form-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 6px;
+}
+
+/* --- Inputs dentro del modal --- */
+.modal-input-wrap {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    transition: all 0.2s ease;
+    overflow: hidden;
+}
+.modal-input-wrap:focus-within {
+    border-color: var(--estado-en-proceso-rail);
+    background: var(--surface);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08);
+}
+.modal-input-wrap input,
+.modal-input-wrap select {
+    width: 100%;
+    padding: 10px 14px;
+    border: none !important;
+    background: transparent !important;
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    color: var(--ink);
+    outline: none !important;
+    box-shadow: none !important;
+}
+.modal-input-wrap select {
+    cursor: pointer;
+    appearance: auto;
+}
+
+/* --- Separador de sección --- */
+.modal-section-divider {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0.25rem 0 0.75rem;
+}
+.modal-section-divider span {
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-muted);
+    white-space: nowrap;
+}
+.modal-section-divider::before,
+.modal-section-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+}
+
+/* --- Info de DNI (aviso clave inicial) --- */
+.dni-hint {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--estado-en-proceso-bg);
+    border: 1px solid var(--estado-en-proceso-badge-bg);
+    border-radius: var(--radius-sm);
+    padding: 8px 12px;
+    margin-top: 6px;
+}
+.dni-hint i {
+    color: var(--estado-en-proceso-rail);
+    font-size: 0.85rem;
+    flex-shrink: 0;
+}
+.dni-hint span {
+    font-size: 0.75rem;
+    color: var(--estado-en-proceso-text);
+    line-height: 1.4;
+}
+
+/* --- Footer del modal --- */
+.modal-footer-app {
+    background: var(--surface-2);
+    border-top: 1px solid var(--border);
+    padding: 1rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+/* --- Botón cancelar --- */
+.btn-modal-cancel {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 18px;
+    background: var(--surface);
+    color: var(--ink-soft);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+}
+.btn-modal-cancel:hover {
+    background: var(--surface-2);
+    color: var(--ink);
+    border-color: var(--ink-muted);
+}
+
+/* --- Botón confirmar (primary) --- */
+.btn-modal-confirm {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 22px;
+    background: var(--estado-en-proceso-rail);
+    color: white;
+    border: none;
+    border-radius: 100px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
+}
+.btn-modal-confirm:hover {
+    background: var(--btn-primary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(37, 99, 235, 0.35);
+}
+
+/* Variante éxito (para guardar cambios) */
+.btn-modal-confirm.success {
+    background: var(--estado-resuelto-rail);
+    box-shadow: 0 2px 8px rgba(22, 163, 74, 0.25);
+}
+.btn-modal-confirm.success:hover {
+    background: #15803d;
+    box-shadow: 0 4px 16px rgba(22, 163, 74, 0.35);
+}
+
+/* --- Badge de rol en el select (visual) --- */
+.role-select-preview {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 6px;
+    font-size: 0.75rem;
+    color: var(--ink-muted);
+}
+
+/* --- Animación de entrada del modal --- */
+.modal.fade .modal-dialog {
+    transform: translateY(-12px) scale(0.98);
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s ease;
+}
+.modal.show .modal-dialog {
+    transform: translateY(0) scale(1);
+}

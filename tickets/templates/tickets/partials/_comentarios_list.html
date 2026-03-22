@@ -1,0 +1,59 @@
+{% for comentario in comentarios %}
+<div class="comentario-item 
+    {% if comentario.usuario.role == 'tecnico' %}tecnico{% endif %}
+    {% if comentario.usuario.role == 'administrador' %}admin{% endif %}
+    {% if comentario.usuario.role == 'usuario' %}usuario{% endif %}
+    {% if comentario.tipo_comentario == 'confirmacion' %}comentario-sistema{% endif %}">
+
+    <div class="d-flex gap-3">
+
+        <!-- AVATAR -->
+        <div class="flex-shrink-0">
+            {% if comentario.usuario.foto %}
+                <img src="{{ comentario.usuario.foto.url }}" 
+                     class="comentario-avatar"
+                     alt="{{ comentario.usuario.username }}">
+            {% else %}
+                <div class="comentario-avatar avatar-iniciales">
+                    {{ comentario.usuario.first_name|slice:":1"|upper }}{{ comentario.usuario.last_name|slice:":1"|upper }}
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- CONTENIDO -->
+        <div class="flex-grow-1">
+
+            <!-- HEADER -->
+            <div class="comentario-header">
+                <div>
+                    <span class="comentario-autor">
+                        {{ comentario.usuario.get_full_name|default:comentario.usuario.username }}
+                    </span>
+
+                    <span class="comentario-rol">
+                        {{ comentario.usuario.role|title }}
+                    </span>
+                </div>
+
+                <span class="comentario-fecha">
+                    <i class="bi bi-clock me-1"></i>
+                    {{ comentario.fecha_creacion|date:"d M. Y, H:i" }}
+                </span>
+            </div>
+
+            <!-- TEXTO -->
+            <div class="comentario-texto 
+                {% if comentario.tipo_comentario == 'confirmacion' %}comentario-sistema-texto{% endif %}">
+                {{ comentario.texto }}
+            </div>
+
+        </div>
+    </div>
+</div>
+
+{% empty %}
+<div class="text-center text-muted py-5">
+    <i class="bi bi-chat-square-dots fs-2 d-block mb-2 opacity-25"></i>
+    <small>Aún no hay comentarios en esta incidencia.</small>
+</div>
+{% endfor %}

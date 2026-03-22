@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<style>
+    @page {
+        size: A4;
+        margin: 1.5cm;
+        @bottom-center {
+            content: "Página " counter(page) " de " counter(pages) " | UGEL Morropón - Soporte Técnico";
+            font-size: 8pt;
+            color: #64748b;
+            border-top: 1px solid #e2e8f0;
+        }
+    }
+
+    body {
+        font-family: "Helvetica", "Arial", sans-serif;
+        font-size: 8.5pt;
+        color: #1e293b;
+        line-height: 1.5;
+    }
+
+    /* HEADER */
+    .header {
+        text-align: center;
+        border-bottom: 3px solid #1e40af;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+    }
+
+    .title {
+        font-size: 18pt;
+        font-weight: bold;
+        color: #1e3a8a;
+        margin: 0;
+    }
+
+    .subtitle {
+        font-size: 10pt;
+        color: #64748b;
+        font-weight: bold;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .report-name {
+        font-size: 13pt;
+        margin-top: 8px;
+        font-weight: bold;
+        color: #1e40af;
+        background: #eff6ff;
+        display: inline-block;
+        padding: 4px 20px;
+        border-radius: 4px;
+    }
+
+    /* INFO BOX */
+    .meta-info {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        padding: 10px;
+        margin-bottom: 20px;
+        border-radius: 4px;
+    }
+
+    /* TABLA */
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    th {
+        background: #1e3a8a;
+        color: white;
+        font-size: 8pt;
+        padding: 8px;
+        text-transform: uppercase;
+        border: 1px solid #1e3a8a;
+    }
+
+    td {
+        border: 1px solid #e2e8f0;
+        padding: 8px;
+        vertical-align: middle;
+    }
+
+    .text-center { text-align: center; }
+    .text-left { text-align: left; }
+    .font-bold { font-weight: bold; }
+
+    /* ESTADOS Y PRIORIDADES */
+    .badge-cerrado { color: #15803d; font-weight: bold; }
+    .badge-pendiente { color: #b91c1c; font-weight: bold; }
+    
+    .prioridad-critica { color: #ef4444; font-weight: bold; }
+    .prioridad-alta { color: #f97316; font-weight: bold; }
+
+    .row-alt { background: #f9fafb; }
+</style>
+</head>
+
+<body>
+
+<div class="header">
+    <div class="title">UGEL MORROPÓN</div>
+    <div class="subtitle">Área de Soporte Técnico e Informática</div>
+    <div class="report-name">Reporte de Incidencias Asignadas</div>
+</div>
+
+<div class="meta-info">
+    <table>
+        <tr>
+            <td><strong>Técnico Asignado:</strong> {{ usuario_reporte|upper }}</td>
+            <td style="text-align:right;"><strong>Fecha de Generación:</strong> {{ fecha_reporte|date:"d/m/Y H:i" }}</td>
+        </tr>
+    </table>
+</div>
+
+<table>
+    <thead>
+        <tr>
+            <th width="7%">ID</th>
+            <th width="10%">Fecha</th>
+            <th width="15%">Solicitante</th> <th width="15%">Área</th>
+            <th width="33%">Descripción</th>
+            <th width="10%">Prioridad</th>
+            <th width="10%">Estado</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for inc in incidencias %}
+        <tr class="{% cycle '' 'row-alt' %}">
+            <td class="text-center font-bold">#{{ inc.id|stringformat:"03d" }}</td>
+            <td class="text-center">{{ inc.fecha_creacion|date:"d/m/Y" }}</td>
+            <td class="text-left">{{ inc.creador.get_full_name|default:inc.creador.username }}</td>
+            <td class="text-center">{{ inc.area.name|default:inc.area }}</td>
+            <td class="text-left">{{ inc.descripcion|truncatechars:85 }}</td>
+            <td class="text-center 
+                {% if inc.prioridad|lower == 'crítica' or inc.prioridad|lower == 'critica' %}prioridad-critica
+                {% elif inc.prioridad|lower == 'alta' %}prioridad-alta{% endif %}">
+                {{ inc.prioridad|upper }}
+            </td>
+            <td class="text-center {% if inc.estado.name|lower == 'cerrado' %}badge-cerrado{% else %}badge-pendiente{% endif %}">
+                {{ inc.estado.name|upper }}
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="7" style="text-align:center; padding:30px; color: #64748b;">
+                Actualmente no cuenta con incidencias asignadas en este periodo.
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+</body>
+</html>

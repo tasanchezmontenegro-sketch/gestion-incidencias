@@ -1,0 +1,155 @@
+/* ============================================================
+   ESTILOS GENERALES Y VARIABLES
+   ============================================================ */
+:root {
+    --bg-gradient-primary: linear-gradient(87deg, #5e72e4 0, #825ee4 100%);
+    --bg-gradient-danger: linear-gradient(87deg, #f5365c 0, #f56036 100%);
+    --bg-gradient-warning: linear-gradient(87deg, #fb6340 0, #fbb140 100%);
+    --bg-gradient-success: linear-gradient(87deg, #2dce89 0, #2dcecc 100%);
+}
+
+.stat-card {
+    border: none;
+    border-radius: 1rem;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 1rem 3rem rgba(0,0,0,.1) !important;
+}
+
+/* Formas de Iconos */
+.icon-shape {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+.bg-gradient-primary { background: var(--bg-gradient-primary) !important; }
+.bg-gradient-danger  { background: var(--bg-gradient-danger) !important; }
+.bg-gradient-warning { background: var(--bg-gradient-warning) !important; }
+.bg-gradient-success { background: var(--bg-gradient-success) !important; }
+
+/* ============================================================
+   BADGES Y ESTADOS (Pills)
+   ============================================================ */
+.badge-soft {
+    padding: 0.35rem 0.75rem;
+    border-radius: 50rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.025em;
+    text-transform: uppercase;
+}
+
+.badge-soft-danger { background-color: #fceaea; color: #f5365c; }
+.badge-soft-warning { background-color: #fff5e9; color: #fb6340; }
+.badge-soft-primary { background-color: #e8eaff; color: #5e72e4; }
+.badge-soft-success { background-color: #e6faf0; color: #2dce89; }
+
+.status-indicator-pill {
+    padding: 0.4rem 0.8rem;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+}
+
+.bg-soft-success { background: #e6faf0 !important; color: #2dce89 !important; }
+.bg-soft-primary { background: #e8eaff !important; color: #5e72e4 !important; }
+.bg-soft-warning { background: #fff5e9 !important; color: #fb6340 !important; }
+
+/* ============================================================
+   TABLA Y AVATARES
+   ============================================================ */
+.table thead th {
+    background-color: #f8fafc;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    color: #8898aa;
+    border-top: none;
+}
+
+.avatar-sm {
+    font-size: 0.8rem;
+    background: #5e72e4;
+}
+
+.avatar-wrapper {
+    position: relative;
+    flex-shrink: 0;
+}
+
+/* Animación para los gráficos al cargar */
+canvas {
+    animation: fadeIn 1.2s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* 🔥 Layout Grid Principal */
+.dashboard-grid {
+    align-items: stretch; /* Asegura que las columnas tengan la misma altura */
+}
+
+/* KPIs Compactos */
+.kpi-card {
+    border-radius: 14px !important;
+}
+
+.kpi-card-sm {
+    border-radius: 12px !important;
+}
+
+.kpi-card .h2 {
+    font-size: 2rem;
+    letter-spacing: -1px;
+}
+
+.kpi-card-sm .h3 {
+    font-size: 1.5rem;
+    letter-spacing: -0.5px;
+}
+
+/* Iconos Soft para KPIs */
+.bg-soft-danger { background-color: #fceaea !important; }
+.bg-soft-warning { background-color: #fff5e9 !important; }
+.bg-soft-success { background-color: #e6faf0 !important; }
+.bg-soft-info { background-color: #e3f2fd !important; }
+
+/* Gradiente para la tarjeta del PDF */
+.bg-danger-gradient {
+    background: linear-gradient(87deg, #f5365c 0, #f56036 100%) !important;
+    border-radius: 14px !important;
+}
+
+/* Contenedores de Gráficos */
+.chart-container-card {
+    display: flex;
+    flex-direction: column;
+}
+
+.chart-container-card .card-body {
+    flex-grow: 1;
+    overflow: hidden;
+}
+
+/* Responsivo para móviles */
+@media (max-width: 991.98px) {
+    .dashboard-grid {
+        flex-direction: column;
+    }
+    
+    .col-xl-4, .col-xl-8 {
+        width: 100%;
+    }
+}

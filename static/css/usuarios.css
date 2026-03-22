@@ -1,0 +1,249 @@
+/* --- Gestión de Usuarios - UGEL Morropón --- */
+
+:root {
+    --u-primary: #0D6EFD;
+    --u-admin-bg: #fee2e2;
+    --u-admin-text: #991b1b;
+    --u-tecnico-bg: #e0e7ff;
+    --u-tecnico-text: #3730a3;
+    --u-user-bg: #f3f4f6;
+    --u-user-text: #374151;
+    --u-active-bg: #dcfce7;
+    --u-active-text: #166534;
+    --u-inactive-bg: #f3f4f6;
+    --u-inactive-text: #6b7280;
+}
+
+/* Header y Contenedores */
+.page-header {
+    background: white;
+    padding: 1.25rem 1.5rem;
+    border-radius: 1rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.header-icon {
+    width: 48px;
+    height: 48px;
+    background: var(--u-primary);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    font-size: 1.5rem;
+}
+
+/* Barra de Búsqueda y Toolbar */
+.toolbar {
+    background: white;
+    padding: 1rem;
+    border-radius: 0.75rem;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+}
+
+.search-wrap {
+    display: flex;
+    align-items: center;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    overflow: hidden;
+    transition: all 0.2s ease;
+}
+
+.search-wrap input {
+    border: none;
+    background: transparent;
+    padding: 0.6rem 1rem;
+    width: 100%;
+    outline: none;
+    font-size: 0.9rem;
+}
+
+.search-wrap:focus-within {
+    background: white;
+    border-color: var(--u-primary);
+    box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1);
+}
+
+.btn-search {
+    background: #1f2937;
+    color: white;
+    border: none;
+    padding: 8px 24px;
+    font-weight: 600;
+    transition: background 0.2s;
+}
+
+.btn-search:hover {
+    background: #111827;
+}
+
+/* --- Botón Limpiar Filtro --- */
+.btn-clear-filters {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 16px;
+    background-color: #fee2e2;
+    color: #dc2626;
+    border-radius: 10px;
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    border: 1px solid #fecaca;
+    white-space: nowrap;
+}
+
+.btn-clear-filters:hover {
+    background-color: #dc2626;
+    color: white;
+    transform: translateY(-1px);
+}
+
+/* Avatares */
+.user-avatar-wrapper {
+    width: 42px;
+    height: 42px;
+    flex-shrink: 0;
+}
+
+.user-avatar-img, .user-avatar-circle {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px; /* Estilo squircle moderno */
+    object-fit: cover;
+    border: 2px solid white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.user-avatar-circle {
+    background: #e0e7ff;
+    color: #4338ca;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+}
+
+/* Tipografía de Usuario en Tabla */
+.user-name-text {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #111827;
+    line-height: 1.2;
+    display: block;
+}
+
+.user-email-subtext {
+    font-size: 0.8rem;
+    color: #6b7280;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Badges de Rol y Estado */
+.role-badge-admin { background: var(--u-admin-bg) !important; color: var(--u-admin-text) !important; font-size: 11px; text-transform: uppercase; }
+.role-badge-tecnico { background: var(--u-tecnico-bg) !important; color: var(--u-tecnico-text) !important; font-size: 11px; text-transform: uppercase; }
+.role-badge-user { background: var(--u-user-bg) !important; color: var(--u-user-text) !important; font-size: 11px; text-transform: uppercase; }
+
+.status-badge {
+    padding: 5px 12px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    text-transform: uppercase;
+}
+
+.badge-active { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+.badge-inactive { background: #f9fafb; color: #6b7280; border: 1px solid #e5e7eb; }
+
+.status-dot { width: 6px; height: 6px; border-radius: 50%; }
+.badge-active .status-dot { background: #22c55e; box-shadow: 0 0 5px #22c55e; }
+.badge-inactive .status-dot { background: #9ca3af; }
+
+/* Botón Nuevo Usuario */
+.btn-new {
+    background: var(--u-primary);
+    color: white;
+    border: none;
+    padding: 0.6rem 1.25rem;
+    border-radius: 10px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 6px -1px rgba(13, 110, 253, 0.2);
+}
+
+.btn-hover-scale:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(13, 110, 253, 0.3);
+    color: white;
+}
+
+/* Áreas */
+.area-badge {
+    font-size: 0.75rem;
+    padding: 4px 12px;
+    border-radius: 8px;
+    background: #f8fafc;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+    font-weight: 500;
+}
+
+/* Estilos de Tabla */
+.app-card { background: white; border-radius: 1rem; }
+th.sortable { font-size: 0.7rem !important; letter-spacing: 0.05em; }
+
+/* --- Indicadores de Ordenamiento en Encabezados --- */
+
+th.sortable {
+    cursor: pointer;
+    position: relative;
+    transition: background-color 0.2s ease;
+    user-select: none;
+}
+
+th.sortable:hover {
+    background-color: #f1f5f9 !important; /* Color sutil al pasar el mouse */
+    color: var(--u-primary) !important;
+}
+
+/* El icono base (flechitas arriba/abajo) */
+th.sortable .sort-icon {
+    display: inline-block;
+    margin-left: 8px;
+    font-style: normal;
+    font-size: 0.8rem;
+    opacity: 0.3; /* Se ve tenue cuando no está activo */
+    transition: opacity 0.2s;
+}
+
+th.sortable:hover .sort-icon {
+    opacity: 0.8;
+}
+
+/* Contenido de los iconos usando el estándar del JS que ya tienes */
+th.sortable:not(.asc):not(.desc) .sort-icon::after {
+    content: '⇅';
+}
+
+th.sortable.asc .sort-icon::after {
+    content: '▲';
+    color: var(--u-primary);
+    opacity: 1;
+}
+
+th.sortable.desc .sort-icon::after {
+    content: '▼';
+    color: var(--u-primary);
+    opacity: 1;
+}

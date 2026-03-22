@@ -1,0 +1,90 @@
+{% extends 'tickets/base.html' %}
+{% load static %}
+
+{% block title %}Gestionar Incidencia #{{ incidencia.id|stringformat:"04d" }}{% endblock %}
+
+{% block header_title %}
+    <h3 class="mb-0">Gestionar Incidencia #{{ incidencia.id|stringformat:"04d" }}</h3>
+    <p class="text-muted">Asigna un técnico y programa la atención del ticket.</p>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-4">
+                <h5 class="fw-bold mb-4">
+                    <i class="bi bi-person-gear me-2 text-primary"></i>Panel de Asignación y Seguimiento
+                </h5>
+                
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <div style="display: none;">
+                        {{ form.estado }}
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Categoría del Problema</label>
+                            {{ form.categoria }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Prioridad</label>
+                            {{ form.prioridad }}
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label small fw-bold">Área Solicitante</label>
+                            {{ form.area }}
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label small fw-bold">Descripción del Usuario</label>
+                            {{ form.descripcion }}
+                        </div>
+
+                        <div class="col-12 mt-4 pt-3 border-top">
+                            <h6 class="text-primary fw-bold mb-3">
+                                <i class="bi bi-person-badge me-2"></i>Asignación de Personal Técnico
+                            </h6>
+                            <p class="text-muted small">Al asignar un técnico, la incidencia pasará automáticamente a estado <b>En Proceso</b>.</p>
+                        </div>
+
+                        <div class="col-md-12">
+                            <label class="form-label small fw-bold text-dark">Seleccionar Técnico</label>
+                            {{ form.tecnico_asignado }}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-dark">Fecha de Atención</label>
+                            {{ form.fecha_programada_atencion }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-dark">Hora de Atención</label>
+                            {{ form.hora_programada_atencion }}
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label small fw-bold text-dark">Observaciones para el Técnico</label>
+                            {{ form.observaciones_internas }}
+                        </div>
+
+                        <hr class="my-4">
+
+                        <div class="col-12 d-flex justify-content-between">
+                            <a href="{% url 'detalle_incidencia' incidencia.id %}" class="btn btn-outline-secondary px-4">
+                                <i class="bi bi-arrow-left me-1"></i> Volver al Detalle
+                            </a>
+
+                            <button type="submit" class="btn btn-success px-5 shadow-sm">
+                                <i class="bi bi-check-circle me-1"></i> Actualizar Asignación
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

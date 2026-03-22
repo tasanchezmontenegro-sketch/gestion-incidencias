@@ -1,0 +1,16 @@
+{% extends 'tickets/base.html' %}
+
+{% block title %}Error del servidor{% endblock %}
+
+{% block content %}
+<div class="container d-flex flex-column align-items-center justify-content-center min-vh-100">
+    <h1 class="display-1 fw-bold text-danger">500</h1>
+    <p class="fs-3 text-dark"> <span class="text-danger">¡Oops!</span> Algo salió mal.</p>
+    <p class="lead text-muted">
+        Lo sentimos, ha ocurrido un error interno en el servidor.
+    </p>
+    <a href="{% url 'index' %}" class="btn btn-primary rounded-pill px-4 py-2 mt-3">
+        Ir a la página de inicio
+    </a>
+</div>
+{% endblock %}

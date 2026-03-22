@@ -1,0 +1,256 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<style>
+    @page {
+        size: A4;
+        margin: 1.5cm;
+        @bottom-center {
+            content: "Página " counter(page) " de " counter(pages) " | Ticket #{{ i.id|stringformat:'04d' }}";
+            font-size: 8pt;
+            color: #94a3b8;
+        }
+    }
+
+    body {
+        font-family: "Helvetica", Arial, sans-serif;
+        font-size: 9pt;
+        color: #1e293b;
+        line-height: 1.4;
+    }
+
+    /* CABECERA */
+    .header-table {
+        width: 100%;
+        border-bottom: 2px solid #1e40af;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+    }
+
+    .title-report {
+        text-align: center;
+        font-weight: bold;
+        font-size: 14pt;
+        color: #1e3a8a;
+        vertical-align: middle;
+    }
+
+    .meta-text {
+        font-size: 8pt;
+        text-align: right;
+        color: #64748b;
+    }
+
+    /* INFORMACIÓN GENERAL */
+    .main-table {
+        width: 100%;
+        margin-bottom: 15px;
+        border-collapse: collapse;
+    }
+
+    .main-table td {
+        border: 1px solid #e2e8f0;
+        padding: 8px;
+        width: 25%;
+    }
+
+    .bg-gray {
+        background: #f8fafc;
+        font-weight: bold;
+        color: #475569;
+        font-size: 8pt;
+        text-transform: uppercase;
+    }
+
+    /* SECCIONES */
+    .section {
+        margin-top: 15px;
+        page-break-inside: avoid; /* Evita que la sección se corte entre páginas */
+    }
+
+    .section-title {
+        font-weight: bold;
+        border-left: 4px solid #1e40af;
+        padding-left: 8px;
+        font-size: 10pt;
+        color: #1e3a8a;
+        margin-bottom: 5px;
+        text-transform: uppercase;
+    }
+
+    .content-box {
+        border: 1px solid #e2e8f0;
+        padding: 12px;
+        background: #ffffff;
+        border-radius: 4px;
+        min-height: 40px;
+    }
+
+    /* EVIDENCIAS */
+    .evidence-table {
+        width: 100%;
+        margin-top: 10px;
+    }
+
+    .img-container {
+        border: 1px solid #e2e8f0;
+        padding: 5px;
+        background: #f1f5f9;
+        border-radius: 4px;
+        height: 200px; /* Altura fija para uniformidad */
+        display: block;
+        text-align: center;
+    }
+
+    .img-container img {
+        max-width: 100%;
+        max-height: 190px;
+        object-fit: contain;
+    }
+
+    .img-label {
+        font-size: 7.5pt;
+        color: #64748b;
+        margin-bottom: 4px;
+        font-weight: bold;
+    }
+
+    /* COMENTARIOS */
+    .comment-row {
+        border-bottom: 1px solid #f1f5f9;
+        padding: 8px 0;
+    }
+
+    .comment-meta {
+        font-size: 8pt;
+        font-weight: bold;
+        color: #1e40af;
+    }
+
+    .comment-date {
+        font-size: 7.5pt;
+        color: #94a3b8;
+        font-weight: normal;
+    }
+
+    .comment-text {
+        margin-top: 3px;
+        font-style: italic;
+    }
+
+    .footer-note {
+        margin-top: 30px;
+        font-size: 7.5pt;
+        text-align: center;
+        color: #94a3b8;
+        border-top: 1px dashed #e2e8f0;
+        padding-top: 10px;
+    }
+
+    .text-pending {
+    color: #94a3b8;
+    font-style: italic;
+    }
+</style>
+</head>
+
+<body>
+
+<table class="header-table">
+    <tr>
+        <td width="15%">
+            <img src="{% static 'img/logo_ugel.png' %}" width="60">
+        </td>
+        <td width="60%" class="title-report">
+            DETALLE DE TICKET #{{ i.id|stringformat:"04d" }}
+        </td>
+        <td width="25%" class="meta-text">
+            <strong>Generado:</strong> {{ fecha_reporte|date:"d/m/Y H:i" }}<br>
+            <strong>Por:</strong> {{ usuario_reporte }}
+        </td>
+    </tr>
+</table>
+
+<table class="main-table">
+    <tr>
+        <td class="bg-gray">Estado</td>
+        <td style="font-weight: bold; color: #1e40af;">{{ i.estado.name|upper }}</td>
+        <td class="bg-gray">Prioridad</td>
+        <td style="font-weight: bold; color: #dc2626;">{{ i.prioridad|upper }}</td>
+    </tr>
+    <tr>
+        <td class="bg-gray">Área</td>
+        <td>{{ i.area.name|default:"Sin área" }}</td>
+        <td class="bg-gray">Solicitante</td>
+        <td>{{ i.creador.get_full_name|default:i.creador.username }}</td>
+    </tr>
+</table>
+
+<div class="section">
+    <div class="section-title">Descripción del Incidente</div>
+    <div class="content-box">
+        {{ i.descripcion|linebreaks }}
+    </div>
+</div>
+
+<div class="section">
+    <div class="section-title">Solución Aplicada</div>
+    <div class="content-box {% if not i.solucion_aplicada %}text-pending{% endif %}">
+        {{ i.solucion_aplicada|default:"Aún no se ha registrado una solución para este ticket."|linebreaks }}
+    </div>
+</div>
+
+<div class="section">
+    <div class="section-title">Evidencias Fotográficas</div>
+    <table class="evidence-table">
+        <tr>
+            <td width="50%" style="padding-right: 5px;">
+                <div class="img-label">REPORTE INICIAL</div>
+                <div class="img-container">
+                    {% if i.imagen_adjunta %}
+                        <img src="{{ i.imagen_adjunta.url }}">
+                    {% else %}
+                        <div style="padding-top: 80px; color: #cbd5e1;">Sin imagen de reporte</div>
+                    {% endif %}
+                </div>
+            </td>
+            <td width="50%" style="padding-left: 5px;">
+                <div class="img-label">EVIDENCIA DE SOLUCIÓN</div>
+                <div class="img-container">
+                    {% if i.evidencia_solucion %}
+                        <img src="{{ i.evidencia_solucion.url }}">
+                    {% else %}
+                        <div style="padding-top: 80px; color: #cbd5e1;">Sin imagen de solución</div>
+                    {% endif %}
+                </div>
+            </td>
+        </tr>
+    </table>
+</div>
+
+<div class="section">
+    <div class="section-title">Bitácora de Comentarios</div>
+    <div class="content-box">
+        {% for c in i.comentarios.all %}
+            <div class="comment-row">
+                <div class="comment-meta">
+                    {{ c.usuario.get_full_name|default:c.usuario.username }} 
+                    <span class="comment-date">el {{ c.fecha_creacion|date:"d/m/Y a las H:i" }}</span>
+                </div>
+                <div class="comment-text">{{ c.texto }}</div>
+            </div>
+        {% empty %}
+            <div style="text-align: center; color: #94a3b8; padding: 10px;">No hay comentarios registrados en este ticket.</div>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="footer-note">
+    Este documento es un reporte oficial del Sistema de Gestión de Incidencias de la UGEL Morropón.<br>
+    La información aquí contenida es para uso administrativo.
+</div>
+
+</body>
+</html>

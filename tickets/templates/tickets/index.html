@@ -1,0 +1,29 @@
+{% extends 'tickets/base.html' %}
+
+{% block title %}Inicio{% endblock %}
+
+{% block header_title %}
+    <h3 class="mb-0">Bienvenido al Sistema de Gestión de Incidencias</h3>
+    <p class="text-muted">Selecciona una opción del menú lateral para comenzar.</p>
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">¡Hola, {{ user.get_full_name|default:user.username }}!</h5>
+                    <p class="card-text">Tu rol actual es: 
+                        {% for group in user.groups.all %}
+                            <span class="badge bg-primary">{{ group.name }}</span>{% if not forloop.last %}, {% endif %}
+                        {% empty %}
+                            <span class="badge bg-secondary">Trabajador</span>
+                        {% endfor %}
+                    </p>
+                    <p class="card-text">Desde aquí puedes acceder a las funcionalidades disponibles según tu rol.</p>
+                    <a href="{% url 'mi_perfil' %}" class="btn btn-info btn-sm">Ver mi perfil</a>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

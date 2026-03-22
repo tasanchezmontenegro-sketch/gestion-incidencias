@@ -1,0 +1,90 @@
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/modales_usuarios.css' %}">
+
+<div class="modal fade" id="modalEditarUsuario" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+
+            <div class="modal-header-app">
+                <h5 class="modal-title">
+                    <div class="modal-title-icon">
+                        <i class="bi bi-pencil-square"></i>
+                    </div>
+                    Editar Usuario
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <form action="" method="POST">
+                {% csrf_token %}
+                <div class="modal-body-app">
+                    <div class="row g-3">
+
+                        <div class="col-12">
+                            <div class="modal-section-divider">
+                                <span>Datos personales</span>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Nombres</label>
+                            <div class="modal-input-wrap">
+                                <input type="text" name="first_name" placeholder="Nombres">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Apellidos</label>
+                            <div class="modal-input-wrap">
+                                <input type="text" name="last_name" placeholder="Apellidos">
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Correo electrónico</label>
+                            <div class="modal-input-wrap">
+                                <input type="email" name="email" placeholder="correo@ugel.gob.pe">
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="modal-section-divider">
+                                <span>Acceso y área</span>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Rol</label>
+                            <div class="modal-input-wrap">
+                                <select name="role">
+                                    <option value="usuario">Trabajador</option>
+                                    <option value="tecnico">Técnico</option>
+                                    <option value="administrador">Administrador</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Área</label>
+                            <div class="modal-input-wrap">
+                                <select name="area">
+                                    {% for area in areas %}
+                                    <option value="{{ area.id }}">{{ area.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="modal-footer-app">
+                    <button type="button" class="btn-modal-cancel" data-bs-dismiss="modal">
+                        <i class="bi bi-x"></i> Cancelar
+                    </button>
+                    <button type="submit" class="btn-modal-confirm success">
+                        <i class="bi bi-check-lg"></i> Guardar cambios
+                    </button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>

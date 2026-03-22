@@ -1,0 +1,53 @@
+<div id="notif-badge-container" hx-swap-oob="true">
+    {% if unread_notifications_count > 0 %}
+    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger animate__animated animate__pulse animate__infinite">
+        {{ unread_notifications_count }}
+    </span>
+    {% endif %}
+</div>
+
+<li class="dropdown-header border-bottom p-3 list-unstyled">
+    <div class="d-flex justify-content-between align-items-center">
+        <h6 class="mb-0 fw-bold text-dark">Notificaciones</h6>
+        {% if unread_notifications_count > 0 %}
+        <button class="btn btn-link btn-sm text-primary p-0 text-decoration-none small"
+                hx-post="/notificaciones/marcar-todas/"
+                hx-target="#notifications-container"
+                hx-swap="innerHTML"
+                hx-trigger="click consume">
+            Marcar todo como leído
+        </button>
+        {% endif %}
+    </div>
+</li>
+
+<div id="notifications-list">
+    <ul class="list-unstyled mb-0"> {% if notifications %}
+            {% for notif in notifications %}
+            <li class="border-bottom {% if not notif.leido %}notif-nueva{% endif %}">
+                <a href="/notificaciones/ir/{{ notif.pk }}/" 
+                   class="dropdown-item d-flex align-items-start gap-3 py-3 px-3">
+                    <div class="flex-grow-1">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <p class="mb-1 small {% if not notif.leido %}fw-bold text-dark{% else %}text-muted{% endif %}" style="white-space: normal;">
+                                {{ notif.mensaje }}
+                            </p>
+                            {% if not notif.leido %}
+                            <span class="ms-2 bg-primary rounded-circle flex-shrink-0" style="height: 8px; width: 8px;"></span>
+                            {% endif %}
+                        </div>
+                        <span class="text-muted d-block" style="font-size: 0.7rem;">
+                            <i class="bi bi-clock me-1"></i>{{ notif.fecha_creacion|timesince }}
+                        </span>
+                    </div>
+                </a>
+            </li>
+            {% endfor %}
+        {% else %}
+            <li class="p-5 text-center text-muted">
+                <i class="bi bi-bell-slash d-block mb-2 opacity-50" style="font-size: 1.5rem;"></i>
+                <p class="small mb-0">Sin notificaciones nuevas</p>
+            </li>
+        {% endif %}
+    </ul>
+</div>

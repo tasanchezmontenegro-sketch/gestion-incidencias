@@ -1,0 +1,358 @@
+/* ===============================
+   INCIDENCIAS (Admin & User)
+================================= */
+
+/* --- Toolbar & Filtros --- */
+.toolbar {
+    background: var(--surface);
+    padding: 1.25rem;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.search-wrap, .search-wrap-modern {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 0.5rem 1rem;
+    transition: all 0.2s;
+}
+
+.search-wrap:focus-within, .search-wrap-modern:focus-within {
+    border-color: var(--estado-en-proceso-rail);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.search-wrap input, .search-wrap-modern input {
+    border: none;
+    background: transparent;
+    outline: none;
+    width: 100%;
+    font-size: 0.9rem;
+    color: var(--ink);
+}
+
+.btn-search {
+    background: none;
+    border: none;
+    color: var(--ink-muted);
+    cursor: pointer;
+}
+
+/* --- Botones --- */
+.btn-new {
+    background: var(--ink);
+    color: white;
+    padding: 0.6rem 1.2rem;
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+}
+
+.btn-new:hover {
+    background: #000;
+    transform: translateY(-1px);
+    color: white;
+}
+
+.filter-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 0.6rem 1rem;
+    border-radius: var(--radius-md);
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.filter-btn.active {
+    border-color: var(--estado-en-proceso-rail);
+    color: var(--estado-en-proceso-rail);
+}
+
+/* --- Tabla Moderna y Filas Clickeables --- */
+.card-modern {
+    background: var(--surface);
+    border: 1px solid var(--border) !important;
+}
+
+.row-clickable {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.row-clickable:hover {
+    background-color: rgba(37, 99, 235, 0.04) !important;
+}
+
+/* Asegura que el estado no se mueva cuando aparezca el VER CASO */
+.status-container {
+    transition: transform 0.3s ease;
+}
+
+.row-clickable:hover .status-container {
+    transform: translateX(-10px); /* Desplaza el estado un poco a la izquierda para hacer espacio */
+}
+
+/* Añadimos un margen para que no se pegue al texto del estado */
+.hover-info-text {
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+}
+
+.row-clickable:hover .hover-info-text {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Alineación de los nombres en la cabecera */
+.table thead th {
+    border-bottom: 2px solid #f8f9fa;
+    padding-top: 15px;
+    padding-bottom: 15px;
+}
+
+/* Alineación de cabeceras */
+.table thead th.text-end {
+    padding-right: 2.5rem !important;
+}
+
+/* --- Estados y Badges --- */
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+/* Colores de estado sincronizados */
+.bg-warning { background-color: #f59e0b !important; }   /* Pendiente */
+.bg-primary { background-color: #2563eb !important; }   /* En proceso */
+.bg-success { background-color: #16a34a !important; }   /* Resuelto */
+.bg-secondary { background-color: #64748b !important; } /* Cerrado/Gris */
+
+.badge.rounded-pill {
+    padding: 0.4em 1em;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.65rem;
+    letter-spacing: 0.5px;
+}
+
+/* --- Avatares en Tabla --- */
+.avatar-wrapper img {
+    border: 2px solid #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+    transition: transform 0.2s ease;
+}
+
+.row-clickable:hover .avatar-wrapper img {
+    transform: scale(1.1);
+}
+
+.state-pendiente::before { background: #f59e0b; content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; }
+.state-en-proceso::before { background: #2563eb; content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; }
+.state-resuelto::before { background: #16a34a; content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; }
+.state-cerrado::before { background: #64748b; content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; }
+
+/* --- Pagination --- */
+.custom-pagination .page-link {
+    border: none;
+    margin: 0 4px;
+    border-radius: var(--radius-sm);
+    color: var(--ink);
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.custom-pagination .page-item.active .page-link {
+    background: var(--ink);
+    color: white;
+}
+
+.custom-pagination .page-link:hover:not(.active) {
+    background: var(--surface-2);
+}
+
+/* --- Empty States --- */
+.empty-state {
+    background: var(--surface);
+    border: 2px dashed var(--border);
+    border-radius: var(--radius-lg);
+    padding: 4rem 2rem;
+    text-align: center;
+}
+
+thead th a {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    font-weight: 700;
+    transition: color 0.2s;
+}
+
+thead th a:hover {
+    color: var(--estado-en-proceso-rail) !important;
+}
+
+/* Para que la columna de ID no se mueva */
+.font-monospace {
+    letter-spacing: -0.5px;
+}
+
+
+/* =========================================
+   CARDS DE INCIDENCIAS (Vista Trabajador)
+   ========================================= */
+
+/* Estructura Principal de la Card */
+.ticket-card {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    height: 100%;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.ticket-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 20px -10px rgba(0, 0, 0, 0.1);
+    border-color: rgba(37, 99, 235, 0.2);
+}
+
+/* Indicador lateral de estado */
+.ticket-card::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    z-index: 1;
+}
+
+.state-pendiente::before { background: #f59e0b; }
+.state-en-proceso::before { background: #2563eb; }
+.state-resuelto::before { background: #16a34a; }
+.state-cerrado::before { background: #64748b; }
+
+/* Badges Modernos (Fondo suave + Punto) */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+/* Variaciones de Badges */
+.badge-pendiente { background: #fef3c7; color: #92400e; }
+.badge-pendiente .status-dot { background: #f59e0b; box-shadow: 0 0 8px #f59e0b; }
+
+.badge-en-proceso { background: #dbeafe; color: #1e40af; }
+.badge-en-proceso .status-dot { background: #2563eb; box-shadow: 0 0 8px #2563eb; }
+
+.badge-resuelto { background: #dcfce7; color: #166534; }
+.badge-resuelto .status-dot { background: #16a34a; box-shadow: 0 0 8px #16a34a; }
+
+.badge-cerrado { background: #f1f5f9; color: #475569; }
+.badge-cerrado .status-dot { background: #64748b; box-shadow: 0 0 8px #64748b; }
+
+/* Tipografía y Metadatos */
+.ticket-id {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    color: var(--ink-muted);
+    font-size: 0.85rem;
+}
+
+/* --- Truncado de Texto Multilínea (Estándar & Vendor) --- */
+.card-title-text {
+    font-size: 1rem;
+    line-height: 1.5;
+    color: var(--ink);
+    font-weight: 600;
+
+    /* Propiedades críticas para que line-clamp funcione */
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2; /* Número de líneas visibles */
+    
+    /* Estándar moderno (soporte creciente) */
+    line-clamp: 2; 
+    
+    /* Fallback y Seguridad */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-height: 3rem; /* (line-height 1.5 * 2 líneas) */
+}
+
+.meta-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    color: var(--ink-muted);
+}
+
+.meta-row i {
+    font-size: 1rem;
+    color: var(--estado-en-proceso-rail); /* O el color primario */
+}
+
+/* Botones de acción en la Card */
+.ticket-card .btn-sm {
+    padding: 6px 10px;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.ticket-card .btn-outline-danger:hover {
+    background: #fff1f2;
+    color: #e11d48;
+    border-color: #e11d48;
+}
+
+/* Ajustes del Dropdown de Filtros (Puntos de color) */
+.dropdown-item .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.bg-pending { background-color: #f59e0b; }
+.bg-process { background-color: #2563eb; }
+.bg-resolved { background-color: #16a34a; }
+.bg-closed { background-color: #64748b; }

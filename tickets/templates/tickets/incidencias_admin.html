@@ -1,0 +1,296 @@
+{% extends 'tickets/base.html' %}
+{% load static %}
+
+{% block title %}Gestión de Incidencias{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/incidencias.css' %}">
+<style>
+    /* Estilo para el botón circular de la tabla similar a tu imagen */
+    .btn-pdf-circle {
+        width: 32px;
+        height: 32px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        border: 1px solid #dc3545;
+        color: #dc3545;
+        transition: all 0.2s;
+        background: white;
+    }
+    .btn-pdf-circle:hover {
+        background: #dc3545;
+        color: white;
+    }
+    .status-container { min-width: 100px; }
+</style>
+{% endblock %}
+
+{% block header_title %}
+<div class="page-header d-flex align-items-center gap-3">
+    <div class="header-icon-bg">
+        <i class="bi bi-kanban text-primary"></i>
+    </div>
+    <div>
+        <h3 class="mb-0 page-title">Gestión de Incidencias</h3>
+        <p class="text-muted small mb-0">Panel administrativo de control de tickets</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="toolbar">
+    <form method="GET" action="." class="d-flex align-items-center" style="flex:1; min-width:0;">
+        {% if request.GET.estado %}
+        <input type="hidden" name="estado" value="{{ request.GET.estado }}">
+        {% endif %}
+        
+        <div class="search-wrap" style="flex:1; max-width:380px; position: relative;">
+            <input type="text" name="search" 
+                value="{{ request.GET.search|default:'' }}" 
+                placeholder="Buscar por ID, usuario, área o técnico..." 
+                class="form-control-custom"> 
+            
+            {% if request.GET.search %}
+                <a href="?" class="search-clear-btn">
+                    <i class="bi bi-x-circle-fill"></i>
+                </a>
+            {% endif %}
+
+            <button class="btn-search" type="submit">
+                <i class="bi bi-search"></i>
+            </button>
+        </div>
+    </form>
+
+    <div class="toolbar-right d-flex gap-2">
+        <a href="{% url 'reporte_tecnico_pdf' %}" 
+           target="_blank"
+           class="btn btn-danger d-flex align-items-center gap-2 rounded-pill px-3 shadow-sm fw-bold"
+           style="font-size: 0.85rem; height: 38px;">
+            <i class="bi bi-file-earmark-pdf-fill"></i>
+            <span>Descargar Informe</span>
+        </a>
+
+        <div class="dropdown">
+            <button class="filter-btn {% if request.GET.estado %}active{% endif %}"
+                    type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-sliders2"></i>
+                {% if request.GET.estado %}{{ request.GET.estado|capfirst }}{% else %}Filtrar Estado{% endif %}
+                <i class="bi bi-chevron-down" style="font-size:0.65rem;"></i>
+            </button>
+            <ul class="dropdown-menu shadow border-0">
+                <li>
+                    <a class="dropdown-item d-flex align-items-center gap-2" href="{% url 'incidencias_admin' %}">
+                        <span class="dot" style="background:#94a3b8; width:8px; height:8px; border-radius:50%; display:inline-block;"></span>
+                        Ver todos
+                    </a>
+                </li>
+                <li><hr class="dropdown-divider my-1"></li>
+                <li><a class="dropdown-item d-flex align-items-center gap-2" href="?estado=pendiente"><span class="dot bg-warning" style="width:8px; height:8px; border-radius:50%;"></span>Pendiente</a></li>
+                <li><a class="dropdown-item d-flex align-items-center gap-2" href="?estado=en proceso"><span class="dot bg-primary" style="width:8px; height:8px; border-radius:50%;"></span>En Proceso</a></li>
+                <li><a class="dropdown-item d-flex align-items-center gap-2" href="?estado=resuelto"><span class="dot bg-success" style="width:8px; height:8px; border-radius:50%;"></span>Resuelto</a></li>
+                <li><a class="dropdown-item d-flex align-items-center gap-2" href="?estado=cerrado"><span class="dot bg-secondary" style="width:8px; height:8px; border-radius:50%;"></span>Cerrado</a></li>
+            </ul>
+        </div>
+
+        <a href="{% url 'crear_incidencia' %}" class="btn-new">
+            <i class="bi bi-plus-lg"></i> Nuevo Reporte
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card card-modern shadow-sm border-0 rounded-4 overflow-hidden">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light text-muted">
+                        <tr>
+                            <th class="ps-4" style="width: 100px;">
+                                <a href="?order_by={% if request.GET.order_by == 'id' %}-id{% else %}id{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.estado %}&estado={{ request.GET.estado }}{% endif %}" class="text-decoration-none text-muted">
+                                    ID {% if request.GET.order_by == 'id' %}↑{% elif request.GET.order_by == '-id' %}↓{% endif %}
+                                </a>
+                            </th>
+                            <th style="width: 30%;">
+                                <a href="?order_by={% if request.GET.order_by == 'descripcion' %}-descripcion{% else %}descripcion{% endif %}" class="text-decoration-none text-muted">
+                                    Incidencia
+                                </a>
+                            </th>
+                            <th style="width: 15%;">
+                                <a href="?order_by={% if request.GET.order_by == 'area' %}-area{% else %}area{% endif %}" class="text-decoration-none text-muted">
+                                    Área / Ubicación
+                                </a>
+                            </th>
+                            <th style="width: 20%;">Especialista</th>
+                            <th style="width: 12%;">
+                                <a href="?order_by={% if request.GET.order_by == 'prioridad' %}-prioridad{% else %}prioridad{% endif %}" class="text-decoration-none text-muted">
+                                    Prioridad
+                                </a>
+                            </th>
+                            <th class="text-end pe-4" style="width: 23%;">
+                                <a href="?order_by={% if request.GET.order_by == 'estado' %}-estado{% else %}estado{% endif %}" class="text-decoration-none text-muted">
+                                    Estado / Acciones
+                                </a>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for incidencia in incidencias %}
+                            {% with estado_lower=incidencia.estado.name|lower %}
+                            <tr class="row-clickable" data-href="{% url 'detalle_incidencia' incidencia.id %}">
+                                <td class="ps-4">
+                                    <span class="fw-bold text-primary font-monospace">#{{ incidencia.id|stringformat:"04d" }}</span>
+                                </td>
+
+                                <td>
+                                    <div class="d-flex flex-column">
+                                        <span class="fw-bold text-dark text-truncate" style="max-width: 250px;">
+                                            {{ incidencia.descripcion }}
+                                        </span>
+                                        <small class="text-muted" style="font-size: 0.75rem;">
+                                            <i class="bi bi-calendar3 me-1"></i>{{ incidencia.fecha_creacion|date:"d/m/Y H:i" }}
+                                        </small>
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-building me-2 text-muted"></i>
+                                        <span class="small">{{ incidencia.area.name|default:incidencia.area }}</span>
+                                    </div>
+                                </td>
+
+                                <td>
+                                    {% if incidencia.tecnico_asignado %}
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-wrapper me-2">
+                                                {% if incidencia.tecnico_asignado.foto %}
+                                                    <img src="{{ incidencia.tecnico_asignado.foto.url }}" 
+                                                        alt="Avatar" 
+                                                        class="rounded-circle border shadow-sm" 
+                                                        style="width:35px; height:35px; object-fit: cover; flex-shrink: 0;">
+                                                {% else %}
+                                                    <img src="https://ui-avatars.com/api/?name={{ incidencia.tecnico_asignado.first_name }}+{{ incidencia.tecnico_asignado.last_name }}&background=0D6EFD&color=fff&size=64" 
+                                                        alt="Avatar" 
+                                                        class="rounded-circle shadow-sm" 
+                                                        style="width:35px; height:35px; flex-shrink: 0;">
+                                                {% endif %}
+                                            </div>
+                                            
+                                            <div class="d-flex flex-column justify-content-center">
+                                                <span class="text-dark fw-bold" style="font-size: 0.8rem; line-height: 1.1;">
+                                                    {{ incidencia.tecnico_asignado.first_name|default:incidencia.tecnico_asignado.username }}
+                                                </span>
+                                                <span class="text-muted" style="font-size: 0.75rem; line-height: 1.1;">
+                                                    {{ incidencia.tecnico_asignado.last_name }}
+                                                </span>
+                                                {% if incidencia.tecnico_asignado.is_superuser %}
+                                                    <span class="text-primary fw-bold" style="font-size: 0.6rem; letter-spacing: 0.5px; margin-top: 2px;">
+                                                        ADMIN
+                                                    </span>
+                                                {% else %}
+                                                    <span class="text-secondary" style="font-size: 0.6rem; letter-spacing: 0.5px; margin-top: 2px;">
+                                                        TÉCNICO
+                                                    </span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    {% else %}
+                                        <div class="d-flex align-items-center text-muted opacity-50">
+                                            <div class="rounded-circle bg-light border d-flex align-items-center justify-content-center me-2" style="width:35px; height:35px;">
+                                                <i class="bi bi-person-dash" style="font-size: 0.9rem;"></i>
+                                            </div>
+                                            <span class="small"><em>Sin asignar</em></span>
+                                        </div>
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                    {% with p=incidencia.prioridad|lower %}
+                                    <span class="badge rounded-pill {% if 'crit' in p %}bg-danger{% elif 'alt' in p %}bg-warning text-dark{% else %}bg-info text-dark{% endif %}" style="font-size: 0.65rem;">
+                                        {{ incidencia.prioridad|upper }}
+                                    </span>
+                                    {% endwith %}
+                                </td>
+
+                                <td class="pe-4">
+                                    <div class="d-flex align-items-center justify-content-end gap-3">
+                                        <div class="d-flex align-items-center status-container">
+                                            <span class="status-dot me-2 
+                                                {% if estado_lower == 'pendiente' %}bg-warning
+                                                {% elif estado_lower == 'en proceso' %}bg-primary
+                                                {% elif estado_lower == 'resuelto' %}bg-success
+                                                {% else %}bg-secondary{% endif %}"></span>
+                                            <span class="fw-bold text-muted-hover" style="font-size: 0.85rem;">{{ incidencia.estado.name }}</span>
+                                        </div>
+                                        
+                                        <i class="bi bi-eye text-muted opacity-50 d-none d-md-block"></i>
+
+                                        <a href="{% url 'ticket_detalle_pdf' incidencia.id %}" 
+                                           class="btn-pdf-circle"
+                                           target="_blank"
+                                           onclick="event.stopPropagation();">
+                                            <i class="bi bi-file-pdf"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endwith %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if page_obj.has_other_pages %}
+<div class="d-flex justify-content-between align-items-center mt-5 px-1">
+    <small class="text-muted">
+        Mostrando {{ page_obj.start_index }}–{{ page_obj.end_index }} de {{ page_obj.paginator.count }}
+    </small>
+    <nav>
+        <ul class="pagination custom-pagination mb-0">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.estado %}&estado={{ request.GET.estado }}{% endif %}">
+                    <i class="bi bi-chevron-left"></i>
+                </a>
+            </li>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+            <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                <a class="page-link" href="?page={{ num }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.estado %}&estado={{ request.GET.estado }}{% endif %}">
+                    {{ num }}
+                </a>
+            </li>
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.estado %}&estado={{ request.GET.estado }}{% endif %}">
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+</div>
+{% endif %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const rows = document.querySelectorAll(".row-clickable");
+    rows.forEach(row => {
+        row.addEventListener("click", function(e) {
+            // Evita que el clic se dispare si el usuario hace clic en un botón o link interno
+            if (e.target.tagName !== 'A' && e.target.tagName !== 'BUTTON') {
+                window.location.href = this.dataset.href;
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

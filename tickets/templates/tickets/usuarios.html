@@ -1,0 +1,240 @@
+{% extends 'tickets/base.html' %}
+{% load static %}
+
+{% block title %}Gestión de Usuarios - UGEL Morropón{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/usuarios.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="page-header d-flex justify-content-between align-items-center mb-4">
+        <div class="d-flex align-items-center gap-3">
+            <div class="header-icon">
+                <i class="bi bi-people-fill"></i>
+            </div>
+            <div>
+                <h2 class="page-title mb-0">Gestión de Usuarios</h2>
+                <p class="text-muted mb-0">Panel de control de personal y accesos al sistema.</p>
+            </div>
+        </div>
+        <button type="button" class="btn-new btn-hover-scale" data-bs-toggle="modal"
+            data-bs-target="#modalNuevoUsuario">
+            <i class="bi bi-person-plus-fill"></i> Nuevo Usuario
+        </button>
+    </div>
+
+    <div class="toolbar mb-4">
+        <div class="d-flex align-items-center flex-wrap gap-3 w-100">
+            <form method="GET" class="search-wrap flex-grow-1">
+                <i class="bi bi-search ms-3 text-muted"></i>
+                <input type="text" name="q" placeholder="Buscar por nombre, DNI o correo..."
+                    value="{{ request.GET.q|default:'' }}">
+                <button type="submit" class="btn-search">Buscar</button>
+            </form>
+            
+            {% if request.GET.q %}
+            <a href="{% url 'usuarios' %}" class="btn-clear-filters">
+                <i class="bi bi-eraser-fill"></i>
+                <span>Limpiar búsqueda</span>
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="app-card border-0 shadow-sm overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="ps-4 py-3 text-muted small fw-bold text-uppercase sortable" data-col="0">
+                            Usuario <i class="sort-icon"></i>
+                        </th>
+                        <th class="py-3 text-muted small fw-bold text-uppercase sortable" data-col="1">
+                            Área <i class="sort-icon"></i>
+                        </th>
+                        <th class="py-3 text-muted small fw-bold text-uppercase sortable" data-col="2">
+                            Rol <i class="sort-icon"></i>
+                        </th>
+                        <th class="py-3 text-muted small fw-bold text-uppercase sortable" data-col="3">
+                            Estado <i class="sort-icon"></i>
+                        </th>
+                        <th class="text-center py-3 text-muted small fw-bold text-uppercase">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user_obj in users %}
+                    <tr>
+                        <td class="ps-4">
+                            <div class="d-flex align-items-center">
+                                <div class="user-avatar-wrapper me-3">
+                                    {% if user_obj.foto %}
+                                        <img src="{{ user_obj.foto.url }}" alt="" class="user-avatar-img shadow-sm">
+                                    {% else %}
+                                        <div class="user-avatar-circle shadow-sm">
+                                            {{ user_obj.username|slice:":1"|upper }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="d-flex flex-column">
+                                    <span class="user-name-text">{{ user_obj.get_full_name|default:user_obj.username }}</span>
+                                    <span class="user-email-subtext">
+                                        <i class="bi bi-envelope me-1"></i>{{ user_obj.email }}
+                                    </span>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="area-badge area-{{ user_obj.area.name|slugify|default:'sin-area' }}">
+                                {{ user_obj.area.name|default:"Sin área" }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if user_obj.role == 'administrador' %}
+                            <span class="badge role-badge-admin">Administrador</span>
+                            {% elif user_obj.role == 'tecnico' %}
+                            <span class="badge role-badge-tecnico">Técnico</span>
+                            {% else %}
+                            <span class="badge role-badge-user">Trabajador</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="status-badge {% if user_obj.is_active %}badge-active{% else %}badge-inactive{% endif %}">
+                                <span class="status-dot"></span>
+                                {% if user_obj.is_active %}Activo{% else %}Inactivo{% endif %}
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            <div class="d-flex justify-content-center gap-2">
+                                <button class="btn btn-sm btn-light shadow-sm rounded-circle"
+                                    style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;"
+                                    data-bs-toggle="modal" data-bs-target="#modalEditarUsuario"
+                                    data-id="{{ user_obj.pk }}" data-nombre="{{ user_obj.first_name }}"
+                                    data-apellido="{{ user_obj.last_name }}" data-email="{{ user_obj.email }}"
+                                    data-role="{{ user_obj.role }}" data-area="{{ user_obj.area.id }}">
+                                    <i class="bi bi-pencil text-primary"></i>
+                                </button>
+                                <a href="{% url 'reset_password_admin' user_obj.pk %}"
+                                    class="btn btn-sm btn-outline-warning border-0 rounded-circle"
+                                    style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;"
+                                    onclick="return confirmarReset(this.href, '{{ user_obj.username }}')">
+                                    <i class="bi bi-shield-lock text-warning"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-5">
+                            <div class="text-muted">
+                                <i class="bi bi-people fs-1 d-block mb-2"></i>
+                                No se encontraron usuarios registrados.
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if page_obj.has_other_pages %}
+        <div class="d-flex justify-content-between align-items-center px-4 py-3 border-top">
+            <small class="text-muted">
+                Mostrando {{ page_obj.start_index }}–{{ page_obj.end_index }} de {{ page_obj.paginator.count }} usuarios
+            </small>
+            <nav>
+                <ul class="pagination pagination-sm mb-0">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">
+                            <i class="bi bi-chevron-left"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                    {% for num in page_obj.paginator.page_range %}
+                    <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                        <a class="page-link" href="?page={{ num }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">
+                            {{ num }}
+                        </a>
+                    </li>
+                    {% endfor %}
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+
+    </div>
+</div>
+
+{% include 'tickets/modals/usuario_nuevo.html' %}
+{% include 'tickets/modals/usuario_editar.html' %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    const modalEditar = document.getElementById('modalEditarUsuario');
+    if (modalEditar) {
+        modalEditar.addEventListener('show.bs.modal', event => {
+            const button = event.relatedTarget;
+            const id = button.getAttribute('data-id');
+            modalEditar.querySelector('form').action = `/usuarios/${id}/editar/`;
+            modalEditar.querySelector('[name="first_name"]').value = button.getAttribute('data-nombre');
+            modalEditar.querySelector('[name="last_name"]').value = button.getAttribute('data-apellido');
+            modalEditar.querySelector('[name="email"]').value = button.getAttribute('data-email');
+            modalEditar.querySelector('[name="role"]').value = button.getAttribute('data-role');
+            modalEditar.querySelector('[name="area"]').value = button.getAttribute('data-area');
+        });
+    }
+
+    function confirmarReset(url, username) {
+        Swal.fire({
+            title: '¿Restablecer clave?',
+            html: `La contraseña del usuario <b>${username}</b> volverá a ser la clave por defecto.<br><br><small class="text-muted">El usuario deberá cambiarla en su próximo inicio de sesión.</small>`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#0D6EFD',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Sí, restablecer ahora',
+            cancelButtonText: 'Cancelar',
+            reverseButtons: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = url;
+            }
+        });
+        return false;
+    }
+
+    const tablaSortable = document.querySelector('.table');
+    const thSortable = tablaSortable ? tablaSortable.querySelectorAll('th.sortable') : [];
+    let sortCol = -1, sortAsc = true;
+
+    thSortable.forEach(th => {
+        th.addEventListener('click', () => {
+            const col = +th.dataset.col;
+            sortAsc = (col === sortCol) ? !sortAsc : true;
+            sortCol = col;
+            thSortable.forEach(t => t.classList.remove('asc', 'desc'));
+            th.classList.add(sortAsc ? 'asc' : 'desc');
+            const tbody = tablaSortable.querySelector('tbody');
+            const rows = [...tbody.rows];
+            rows.sort((a, b) => {
+                const av = a.cells[col]?.innerText.trim().toLowerCase() || '';
+                const bv = b.cells[col]?.innerText.trim().toLowerCase() || '';
+                return sortAsc ? av.localeCompare(bv, 'es') : bv.localeCompare(av, 'es');
+            });
+            rows.forEach(r => tbody.appendChild(r));
+        });
+    });
+</script>
+{% endblock %}

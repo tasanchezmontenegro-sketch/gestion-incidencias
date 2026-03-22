@@ -1,0 +1,433 @@
+{% extends 'tickets/base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/mi_perfil.css' %}">{% endblock %}
+
+{% block title %}Mi Perfil - UGEL Morropón{% endblock %}
+
+{% block header_title %}
+<div class="mb-4">
+    <h3 class="fw-bold mb-0 text-dark">Configuración de Perfil</h3>
+    <p class="text-muted">Personaliza tu cuenta y mantén tu seguridad al día.</p>
+</div>
+{% endblock %}
+
+{% block content %}
+{% if user.must_change_password %}
+<div class="alert alert-warning d-flex align-items-center gap-3 mb-4 rounded-4 shadow-sm" role="alert">
+    <i class="bi bi-shield-exclamation fs-4 text-warning flex-shrink-0"></i>
+    <div>
+        <strong>Debes cambiar tu contraseña</strong> antes de continuar usando el sistema.
+        Tu clave fue generada automáticamente. Por seguridad, establece una nueva contraseña abajo.
+    </div>
+</div>
+{% endif %}
+
+<div class="row g-4">
+    <div class="col-lg-4">
+        <div class="card profile-card text-center p-4">
+            <div class="card-body">
+                <div class="mb-4">
+                    <div class="profile-avatar-container">
+                        {% if user.foto %}
+                        <img src="{{ user.foto.url }}" id="img-preview" alt="Avatar"
+                            class="rounded-circle img-main-profile">
+                        {% else %}
+                        <img src="https://ui-avatars.com/api/?name={{ user.get_full_name|default:user.username }}&background=0D6EFD&color=fff&size=128"
+                            id="img-preview" alt="Avatar" class="rounded-circle img-main-profile">
+                        {% endif %}
+                        <label for="foto-input" class="btn-camera-upload">
+                            <i class="bi bi-camera-fill"></i>
+                        </label>
+                    </div>
+                </div>
+
+                <h4 class="fw-bold mb-1 text-dark">{{ user.get_full_name|default:user.username }}</h4>
+                <p class="profile-username mb-3">@{{ user.username }}</p>
+
+                <div class="mb-4">
+                    {% if user.role == 'administrador' %}
+                    <span class="badge bg-danger rounded-pill badge-role">Administrador</span>
+                    {% elif user.role == 'tecnico' %}
+                    <span class="badge bg-primary rounded-pill badge-role">Técnico</span>
+                    {% else %}
+                    <span class="badge bg-secondary rounded-pill badge-role">Trabajador</span>
+                    {% endif %}
+                </div>
+
+                <div class="p-3 profile-area" style="background-color: var(--warning-soft);">
+                    <p class="mb-1 small text-muted text-uppercase fw-bold" style="font-size: 0.6rem;">Área de Trabajo
+                    </p>
+                    <div class="d-flex align-items-center justify-content-center text-dark">
+                        {% if user.area %}
+                        <i class="bi bi-briefcase-fill text-warning me-2"></i>
+                        <span class="fw-bold">{{ user.area.name }}</span>
+                        {% else %}
+                        <span class="text-muted small italic">Sin área asignada</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <div class="card shadow-sm mb-4">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center mb-4">
+                    <div class="bg-primary bg-opacity-10 p-2 rounded-3 me-3">
+                        <i class="bi bi-person-badge text-primary fs-4"></i>
+                    </div>
+                    <h5 class="fw-bold mb-0">Información Personal</h5>
+                </div>
+
+                <form method="post" enctype="multipart/form-data" class="profile-form" id="form-profile"> 
+                    {% csrf_token %}
+                    <input type="file" name="foto" id="foto-input" class="d-none" accept="image/*">
+
+                    {% if user.role != 'administrador' %}
+                    <div class="admin-lock-banner mb-4">
+                        <small class="admin-lock-note">
+                            <i class="bi bi-shield-lock-fill"></i> 
+                            Nombres y apellidos son gestionados por el <strong>Administrador</strong>.
+                        </small>
+                    </div>
+                    {% endif %}
+
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <label class="form-label-custom">Nombre</label>
+                            <div class="input-group-custom {% if user.role != 'administrador' %}is-readonly{% endif %}">
+                                <span class="icon-box"><i class="bi bi-person"></i></span>
+                                <input type="text" name="first_name" class="form-control-custom" value="{{ user.first_name }}"
+                                    {% if user.role != 'administrador' %}readonly{% endif %}>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label-custom">Apellido</label>
+                            <div class="input-group-custom {% if user.role != 'administrador' %}is-readonly{% endif %}">
+                                <span class="icon-box"><i class="bi bi-person"></i></span>
+                                <input type="text" name="last_name" class="form-control-custom" value="{{ user.last_name }}" 
+                                    {% if user.role != 'administrador' %}readonly{% endif %}>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label-custom">Correo Electrónico</label>
+                            <div class="input-group-custom" id="group-email">
+                                <span class="icon-box"><i class="bi bi-envelope"></i></span>
+                                <input type="email" name="email" id="id_email" class="form-control-custom" 
+                                        value="{{ user.email }}" placeholder="usuario@ugelmorropon.gob.pe" required>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label-custom">Teléfono</label>
+                            <div class="input-group-custom" id="group-telefono">
+                                <span class="icon-box"><i class="bi bi-phone"></i></span>
+                                <input type="text" name="telefono" id="id_telefono" class="form-control-custom"
+                                    value="{{ user.telefono|default:'' }}" 
+                                    placeholder="987654321"
+                                    maxlength="9"
+                                    oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                                    pattern="[0-9]{9}"
+                                    title="Debe ingresar exactamente 9 números">
+                            </div>
+                        </div>
+
+                        <div class="col-12 mt-5">
+                            <hr class="border-light">
+                            <div class="d-flex justify-content-end">
+                                <button type="submit" name="update_profile" class="btn-pill btn-primary-custom shadow-sm">
+                                    <i class="bi bi-check-circle-fill me-2"></i> Guardar Cambios
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center mb-4">
+                    <div class="bg-warning bg-opacity-10 p-2 rounded-3 me-3">
+                        <i class="bi bi-shield-check text-warning fs-4"></i>
+                    </div>
+                    <h5 class="fw-bold mb-0">Seguridad y Acceso</h5>
+                </div>
+
+                <form method="post" class="password-form" id="form-password"> 
+                    {% csrf_token %}
+                    <div class="row g-4">
+                        <div class="col-12">
+                            <label class="form-label-custom">Contraseña Actual</label>
+                            <div class="input-group-custom">
+                                <span class="icon-box"><i class="bi bi-key"></i></span>
+                                <input type="password" name="old_password" id="id_old_password" class="form-control-custom"
+                                    placeholder="Ingresa tu clave actual" required autocomplete="current-password">
+                                <button class="btn-toggle-view toggle-password" type="button" data-target="id_old_password">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label-custom">Nueva Contraseña</label>
+                            <div class="input-group-custom mb-3">
+                                <span class="icon-box"><i class="bi bi-lock"></i></span>
+                                <input type="password" name="new_password1" id="id_new_password1" class="form-control-custom"
+                                    placeholder="Mínimo 10 caracteres" required autocomplete="new-password">
+                                <button class="btn-toggle-view toggle-password" type="button" data-target="id_new_password1">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+
+                            <div class="requirements-container-vertical">
+                                <h6 class="req-title-simple">Requisitos de seguridad:</h6>
+                                <div id="password-requirements" class="req-list">
+                                    <div class="req-item-v" data-req="length">
+                                        <i class="bi bi-circle"></i> <span>Mínimo 10 caracteres</span>
+                                    </div>
+                                    <div class="req-item-v" data-req="case">
+                                        <i class="bi bi-circle"></i> <span>Mayúsculas y minúsculas</span>
+                                    </div>
+                                    <div class="req-item-v" data-req="number">
+                                        <i class="bi bi-circle"></i> <span>Al menos un número (0-9)</span>
+                                    </div>
+                                    <div class="req-item-v" data-req="special">
+                                        <i class="bi bi-circle"></i> <span>Carácter especial (@#$!)</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label-custom">Confirmar Contraseña</label>
+                            <div class="input-group-custom">
+                                <span class="icon-box"><i class="bi bi-shield-lock"></i></span>
+                                <input type="password" name="new_password2" id="id_new_password2" class="form-control-custom"
+                                    placeholder="Repite la contraseña" required autocomplete="new-password">
+                                <button class="btn-toggle-view toggle-password" type="button" data-target="id_new_password2">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                            <div id="match-message" class="small mt-2 px-2 fw-bold"></div>
+                        </div>
+
+                        <div class="col-12 text-end mt-4">
+                            <button type="submit" name="change_password" class="btn-pill btn-update-password shadow-sm">
+                                <i class="bi bi-arrow-repeat me-2"></i> Actualizar Contraseña
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        
+        // --- 1. LÓGICA DE FOTO DE PERFIL ---
+        const fotoInput = document.getElementById('foto-input');
+        const imgPreview = document.getElementById('img-preview');
+
+        if (fotoInput && imgPreview) {
+            fotoInput.addEventListener('change', function () {
+                const file = this.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => imgPreview.src = e.target.result;
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+
+        // --- 2. LÓGICA DE VALIDACIÓN DE REQUISITOS ---
+        const newPassword = document.getElementById('id_new_password1');
+        const confirmPassword = document.getElementById('id_new_password2');
+        const matchMessage = document.getElementById('match-message');
+        const btnSubmit = document.querySelector('button[name="change_password"]');
+        
+        const requirements = {
+            length: { regex: /.{10,}/, el: document.querySelector('[data-req="length"]') },
+            case: { regex: /(?=.*[a-z])(?=.*[A-Z])/, el: document.querySelector('[data-req="case"]') },
+            number: { regex: /[0-9]/, el: document.querySelector('[data-req="number"]') },
+            special: { regex: /[@#$!%*?&]/, el: document.querySelector('[data-req="special"]') }
+        };
+
+        // Función para habilitar/deshabilitar botón
+        const updateButtonStatus = () => {
+            if (!newPassword || !btnSubmit) return;
+            
+            const val = newPassword.value;
+            const confirmVal = confirmPassword ? confirmPassword.value : "";
+            
+            // Verifica si cumple todos los regex
+            const allValid = Object.values(requirements).every(req => req.regex.test(val));
+            // Verifica si coinciden y no están vacíos
+            const match = val === confirmVal && val.length > 0;
+            
+            const isReady = allValid && match;
+            btnSubmit.disabled = !isReady;
+            btnSubmit.style.opacity = isReady ? "1" : "0.5";
+            btnSubmit.style.cursor = isReady ? "pointer" : "not-allowed";
+        };
+
+        const validateMatch = () => {
+            if (!confirmPassword || !matchMessage) return;
+            
+            const val1 = newPassword.value;
+            const val2 = confirmPassword.value;
+
+            if (val2.length === 0) {
+                matchMessage.textContent = '';
+                return;
+            }
+
+            if (val1 === val2) {
+                matchMessage.textContent = '✓ Las contraseñas coinciden';
+                matchMessage.className = 'small mt-2 px-2 fw-bold text-success';
+            } else {
+                matchMessage.textContent = '✕ Las contraseñas no coinciden';
+                matchMessage.className = 'small mt-2 px-2 fw-bold text-danger';
+            }
+        };
+
+        if (newPassword) {
+            newPassword.addEventListener('input', function () {
+                const val = this.value;
+
+                Object.keys(requirements).forEach(key => {
+                    const req = requirements[key];
+                    if (!req.el) return;
+                    
+                    const icon = req.el.querySelector('i');
+                    const isDone = req.regex.test(val);
+
+                    req.el.classList.toggle('is-valid', isDone);
+                    
+                    if (isDone) {
+                        icon.classList.replace('bi-circle', 'bi-check-circle-fill');
+                    } else {
+                        icon.classList.replace('bi-check-circle-fill', 'bi-circle');
+                    }
+                });
+                validateMatch();
+                updateButtonStatus();
+            });
+        }
+
+        if (confirmPassword) {
+            confirmPassword.addEventListener('input', () => {
+                validateMatch();
+                updateButtonStatus();
+            });
+        }
+
+        // --- 4. LÓGICA DE MOSTRAR/OCULTAR CONTRASEÑA ---
+        document.querySelectorAll('.toggle-password').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const target = document.getElementById(this.dataset.target);
+                const icon = this.querySelector('i');
+                
+                if (target.type === 'password') {
+                    target.type = 'text';
+                    icon.classList.replace('bi-eye', 'bi-eye-slash');
+                } else {
+                    target.type = 'password';
+                    icon.classList.replace('bi-eye-slash', 'bi-eye');
+                }
+            });
+        });
+
+        // Ejecución inicial para setear el estado del botón al cargar
+        updateButtonStatus();
+
+        // --- 5. VALIDACIÓN DE EMAIL Y TELÉFONO (OPTIMIZADA) ---
+        const emailInput = document.getElementById('id_email');
+        const telInput = document.getElementById('id_telefono');
+
+        if (emailInput) {
+            emailInput.addEventListener('input', function() {
+                const group = document.getElementById('group-email');
+                const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                
+                // Aplicamos clase o estilo según validez
+                const isValid = this.value === "" || emailPattern.test(this.value);
+                group.style.transition = "border-color 0.3s ease";
+                group.style.borderColor = isValid ? "" : "#ef4444";
+                group.style.boxShadow = isValid ? "" : "0 0 0 3px rgba(239, 68, 68, 0.1)";
+            });
+        }
+
+        if (telInput) {
+            telInput.addEventListener('input', function() {
+                const group = document.getElementById('group-telefono');
+                
+                // Limpiar caracteres no numéricos
+                this.value = this.value.replace(/\D/g, '');
+                
+                const isValid = this.value.length === 9 || this.value.length === 0;
+                group.style.transition = "border-color 0.3s ease";
+                group.style.borderColor = isValid ? "" : "#ef4444";
+                group.style.boxShadow = isValid ? "" : "0 0 0 3px rgba(239, 68, 68, 0.1)";
+            });
+        }
+
+        // --- 6. CONFIRMACIÓN ANTES DE GUARDAR ---
+        const handleConfirm = (formId, title, text, icon) => {
+            const form = document.getElementById(formId);
+            if (!form) return;
+
+            form.addEventListener('submit', function(e) {
+                e.preventDefault(); // Detiene el envío automático
+
+                Swal.fire({
+                    title: title,
+                    text: text,
+                    icon: icon,
+                    showCancelButton: true,
+                    confirmButtonColor: '#0D6EFD',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: '<i class="bi bi-check-lg"></i> Sí, guardar',
+                    cancelButtonText: 'Cancelar',
+                    reverseButtons: true,
+                    customClass: {
+                        popup: 'rounded-4 shadow-lg'
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Muestra un pequeño loading antes de enviar
+                        Swal.fire({
+                            title: 'Procesando...',
+                            didOpen: () => { Swal.showLoading() },
+                            allowOutsideClick: false,
+                            showConfirmButton: false
+                        });
+                        form.submit(); // Envía el formulario manualmente
+                    }
+                });
+            });
+        };
+
+        // Aplicar a ambos formularios con mensajes personalizados
+        handleConfirm(
+            'form-profile', 
+            '¿Actualizar datos?', 
+            'Se guardarán los cambios en tu información de contacto.', 
+            'question'
+        );
+
+        handleConfirm(
+            'form-password', 
+            '¿Cambiar contraseña?', 
+            'Tu sesión seguirá activa, pero deberás usar la nueva clave la próxima vez.', 
+            'warning'
+        );
+    });
+</script>
+{% endblock content %}

@@ -1,0 +1,104 @@
+{% extends 'tickets/base.html' %}
+{% load static %}
+
+{% block title %}Iniciar Sesión | Soporte TI{% endblock %}
+
+{% block content %}
+<style>
+    /* Efectos adicionales que no vienen por defecto en Bootstrap */
+    .login-card {
+        transition: transform 0.3s ease;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.08) !important;
+    }
+    .form-control:focus {
+        border-color: #0d6efd;
+        box-shadow: none;
+        background-color: #fff !important;
+    }
+    .input-group-text {
+        transition: all 0.3s ease;
+    }
+    .form-control:focus + .input-group-text, 
+    .input-group:focus-within .input-group-text {
+        background-color: #fff !important;
+        border-color: #0d6efd;
+    }
+    .btn-login {
+        background: linear-gradient(45deg, #0d6efd, #004bb5);
+        border: none;
+        transition: all 0.3s ease;
+    }
+    .btn-login:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(13, 110, 253, 0.4);
+        filter: brightness(1.1);
+    }
+</style>
+
+<div class="d-flex justify-content-center align-items-center min-vh-100">
+    <div class="card login-card border-0 p-4" style="width: 100%; max-width: 400px; border-radius: 20px;">
+    <div class="card-body text-center">
+        <div class="mb-4">
+            <img src="{% static 'img/logo_ugel.webp' %}" alt="Logo UGEL" class="img-fluid" style="max-height: 100px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));">
+        </div>
+        
+        <h3 class="fw-bold mb-1" style="color: #2c3e50;">Soporte TI</h3>
+        <p class="text-muted mb-4">Gestión de Incidentes UGEL Morropón</p>
+
+        <form method="post" class="text-start">
+            {% csrf_token %}
+            
+            {% if form.errors %}
+                <div class="alert alert-danger py-2 border-0 small d-flex align-items-center" role="alert" style="border-radius: 10px;">
+                    <i class="bi bi-exclamation-circle-fill me-2"></i> Usuario o contraseña incorrectos
+                </div>
+            {% endif %}
+
+            <div class="mb-3">
+                <label for="id_username" class="form-label small fw-bold text-secondary">Usuario</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0" style="border-radius: 10px 0 0 10px;">
+                        <i class="bi bi-person-fill text-muted"></i>
+                    </span>
+                    <input type="text" class="form-control bg-light border-start-0 py-2" 
+                           id="id_username" name="username" placeholder="Ingresa tu usuario" 
+                           style="border-radius: 0 10px 10px 0;" required>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label for="id_password" class="form-label small fw-bold text-secondary">Contraseña</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0" style="border-radius: 10px 0 0 10px;">
+                        <i class="bi bi-shield-lock-fill text-muted"></i>
+                    </span>
+                    <input type="password" class="form-control bg-light border-start-0 py-2" 
+                           id="id_password" name="password" placeholder="••••••••" 
+                           style="border-radius: 0;" required>
+                    <button class="btn btn-outline-light border-start-0 bg-light text-muted border" type="button" id="togglePassword" style="border-radius: 0 10px 10px 0;">
+                        <i class="bi bi-eye" id="eyeIcon"></i>
+                    </button>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-login w-100 py-2 fw-bold shadow-sm" style="border-radius: 12px;">
+                Ingresar al Sistema <i class="bi bi-arrow-right-short ms-1"></i>
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Script para mostrar/ocultar contraseña
+    const togglePassword = document.querySelector('#togglePassword');
+    const password = document.querySelector('#id_password');
+    const eyeIcon = document.querySelector('#eyeIcon');
+
+    togglePassword.addEventListener('click', function (e) {
+        const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+        password.setAttribute('type', type);
+        eyeIcon.classList.toggle('bi-eye');
+        eyeIcon.classList.toggle('bi-eye-slash');
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,7 @@
+/* base_tickets.css */
+:root {
+    --prio-critica: #dc2626;
+    --prio-alta: #ea580c;
+    --estado-resuelto: #16a34a;
+    /* ... etc */
+}

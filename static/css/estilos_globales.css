@@ -1,0 +1,317 @@
+/* Import de Fuentes Globales */
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap');
+
+/* ===============================
+   VARIABLES
+================================= */
+:root {
+    --ink: #0f172a;
+    --ink-soft: #475569;
+    --ink-muted: #94a3b8;
+    --surface: #ffffff;
+    --surface-2: #f8fafc;
+    --border: #e2e8f0;
+    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-hover: 0 8px 24px rgba(0,0,0,0.09);
+
+    --font-display: 'Syne', sans-serif;
+    --font-body: 'DM Sans', sans-serif;
+
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 14px;
+
+    --estado-en-proceso-bg: #eff6ff;
+    --estado-en-proceso-rail: #2563eb;
+}
+
+/* ===============================
+   BASE
+================================= */
+body {
+    display: flex;
+    min-height: 100vh;
+    background-color: var(--surface-2);
+    font-family: var(--font-body);
+}
+
+/* ===============================
+   SIDEBAR
+================================= */
+.sidebar {
+    width: 240px;
+    background: var(--surface);
+    box-shadow: var(--shadow);
+    padding: 1.25rem 0.875rem;
+    position: fixed;
+    height: 100vh;
+    overflow-y: auto;
+    z-index: 1000;
+
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    transition: transform 0.28s cubic-bezier(0.4,0,0.2,1);
+}
+
+.content-with-sidebar {
+    margin-left: 280px; /* Ajusta según el ancho de tu sidebar */
+    transition: margin-left 0.3s ease;
+}
+
+.content-with-sidebar.expanded {
+    margin-left: 0;
+}
+
+.sidebar.collapsed {
+    transform: translateX(-100%);
+}
+
+/* Header */
+.sidebar-header {
+    text-align: center;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.sidebar-header img {
+    width: 60px;
+    border-radius: 50%;
+    margin-bottom: 5px;
+}
+
+.sidebar-header h5 {
+    font-weight: 800;
+}
+
+/* ===============================
+   USUARIO SIDEBAR
+================================= */
+.sidebar-user {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: var(--surface-2);
+    border-radius: var(--radius-md);
+    margin: 10px 0;
+    text-decoration: none;
+}
+
+.sidebar-user-avatar,
+.sidebar-user-avatar-initials {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+}
+
+.sidebar-user-avatar {
+    object-fit: cover;
+    border: 2px solid var(--border);
+}
+
+.sidebar-user-avatar-initials {
+    background: var(--estado-en-proceso-rail);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+}
+
+.sidebar-user-info {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Nombre */
+.user-name {
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+/* Apellido */
+.user-lastname {
+    font-size: 0.8rem;
+    color: var(--ink-soft);
+}
+
+.user-name,
+.user-lastname {
+    text-decoration: none;
+}
+
+/* Badge rol */
+.badge-role {
+    font-size: 0.65rem;
+    padding: 3px 8px;
+    text-transform: uppercase;
+}
+
+/* ===============================
+   NAV
+================================= */
+.nav-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    border-radius: var(--radius-md);
+    background: var(--surface-2);
+    text-decoration: none;
+    color: var(--ink-soft);
+    transition: all 0.2s;
+}
+
+.nav-card:hover {
+    background: #e2e8f0;
+}
+
+.nav-card.active {
+    background: var(--estado-en-proceso-bg);
+    color: var(--estado-en-proceso-rail);
+    font-weight: 600;
+}
+
+.nav-card-danger {
+    color: red;
+}
+
+/* ===============================
+   CONTENIDO
+================================= */
+.content-area {
+    margin-left: 240px;
+    width: calc(100% - 240px);
+    transition: all 0.3s;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* 🔥 CLAVE */
+.sidebar.collapsed ~ .content-area {
+    margin-left: 0;
+    width: 100%;
+}
+
+.content-body {
+    padding: 1.5rem;
+    min-height: calc(100vh - 70px); /* Restando la altura de la topbar */
+}
+
+/* ===============================
+   TOPBAR
+================================= */
+.app-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 1000; /* Por encima de las tarjetas */
+    background-color: rgba(255, 255, 255, 0.9); /* Transparencia elegante */
+    backdrop-filter: blur(10px); /* Efecto Glassmorphism */
+    border-bottom: 1px solid #e3e6f0;
+    height: 70px; /* Altura fija para control */
+    transition: all 0.3s ease;
+}
+
+.topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 15px; /* Espacio entre iconos si agregas más en el futuro */
+}
+
+.topbar-toggle {
+    border: none;
+    background: transparent;
+    font-size: 1.2rem;
+}
+
+/* Evita que los iconos se vean azules o con bordes extraños al hacer clic */
+.topbar-toggle, .topbar-right button {
+    background: none;
+    border: none;
+    outline: none;
+    color: #64748b;
+    transition: color 0.2s;
+}
+
+.topbar-toggle:hover {
+    color: #2563eb;
+}
+
+/* ===============================
+   BOTONES / UTILIDADES
+================================= */
+.btn-hover-scale:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hover);
+}
+
+/* ===============================
+   RESPONSIVE
+================================= */
+@media (max-width: 768px) {
+    .sidebar {
+        transform: translateX(-100%);
+    }
+
+    .sidebar.show {
+        transform: translateX(0);
+    }
+
+    .content-area {
+        margin-left: 0;
+        width: 100%;
+    }
+}
+
+/* Estilos para la nota referencial en Modo Claro */
+.form-text {
+    display: block;
+    color: #858796; /* Gris suave profesional */
+    font-size: 0.75rem;
+    font-style: italic;
+    margin-top: 5px;
+}
+
+.bi-info-circle {
+    margin-right: 4px;
+    color: #4e73df; /* Un toque de azul para resaltar el icono de info */
+}
+
+/* Efecto para las tarjetas de estadísticas */
+.stat-card {
+    border: none;
+    border-left: 4px solid transparent;
+    transition: all 0.3s ease;
+    border-radius: 12px;
+}
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.08) !important;
+}
+
+/* Gradientes para los iconos */
+.icon-shape {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+}
+.bg-gradient-danger { background: linear-gradient(45deg, #f5365c, #f56036); }
+.bg-gradient-warning { background: linear-gradient(45deg, #fb6340, #fbb140); }
+.bg-gradient-success { background: linear-gradient(45deg, #2dce89, #2dcecc); }
+.bg-gradient-primary { background: linear-gradient(45deg, #5e72e4, #825ee4); }
+
+/* Tabla más limpia */
+.table thead th {
+    background-color: #f8f9fe;
+    border-top: none;
+    font-size: 0.75rem;
+    letter-spacing: 1px;
+    color: #8898aa;
+}

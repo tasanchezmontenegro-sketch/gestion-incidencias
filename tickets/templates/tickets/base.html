@@ -1,0 +1,278 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Gestión de Incidencias UGEL Morropón{% endblock %}</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@sweetalert2/theme-bootstrap-4/bootstrap-4.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+    <link rel="stylesheet" href="{% static 'css/estilos_globales.css' %}">
+    {% block extra_css %}{% endblock %}
+
+    <script src="{% static 'js/htmx.min.js' %}"></script>
+</head>
+
+<body>
+
+    {% if user.is_authenticated %}
+    <div class="sidebar" id="appSidebar">
+    
+    <div class="sidebar-header">
+        <img src="{% static 'img/logo_ugel.webp' %}" alt="Logo">
+        <h5 style="font-weight:800;">UGEL Morropón</h5>
+        <small>Soporte TI</small>
+    </div>
+
+        <!-- 🔥 USUARIO LOGUEADO -->
+        <a href="{% url 'mi_perfil' %}" class="sidebar-user">
+    
+            {% if user.foto %}
+                <img src="{{ user.foto.url }}" class="sidebar-user-avatar" alt="Usuario">
+            {% else %}
+                <div class="sidebar-user-avatar-initials">
+                    {{ user.first_name|slice:":1"|upper }}{{ user.last_name|slice:":1"|upper }}
+                </div>
+            {% endif %}
+
+            <div class="sidebar-user-info">
+                <span class="user-name">{{ user.first_name }}</span>
+                <span class="user-lastname">{{ user.last_name }}</span>
+
+                <div class="mt-1">
+                    {% if user.role == 'administrador' %}
+                        <span class="badge bg-danger rounded-pill badge-role">Administrador</span>
+                    {% elif user.role == 'tecnico' %}
+                        <span class="badge bg-primary rounded-pill badge-role">Técnico</span>
+                    {% else %}
+                        <span class="badge bg-secondary rounded-pill badge-role">Trabajador</span>
+                    {% endif %}
+                </div>
+            </div>
+        </a>
+
+        {% if user.role == 'administrador' or user.is_staff %}
+        <a class="nav-card {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'dashboard' %}">
+            <i class="bi bi-speedometer2"></i> Dashboard
+        </a>
+        <a class="nav-card {% if request.resolver_match.url_name == 'incidencias_admin' %}active{% endif %}" href="{% url 'incidencias_admin' %}">
+            <i class="bi bi-ticket-detailed"></i> Incidencias
+        </a>
+        <a class="nav-card {% if request.resolver_match.url_name == 'usuarios' %}active{% endif %}" href="{% url 'usuarios' %}">
+            <i class="bi bi-people"></i> Usuarios
+        </a>
+
+        {% elif user.role == 'tecnico' %}
+        <a class="nav-card {% if request.resolver_match.url_name == 'dashboard_tecnico' %}active{% endif %}" href="{% url 'dashboard_tecnico' %}">
+            <i class="bi bi-speedometer2"></i> Dashboard
+        </a>
+        <a class="nav-card {% if request.resolver_match.url_name == 'incidencias_asignadas' %}active{% endif %}" href="{% url 'incidencias_asignadas' %}">
+            <i class="bi bi-ticket-detailed"></i> Asignadas
+        </a>
+        <a class="nav-card {% if request.resolver_match.url_name == 'crear_incidencia' %}active{% endif %}" href="{% url 'crear_incidencia' %}">
+            <i class="bi bi-plus-circle"></i> Reportar Incidencia
+        </a>
+
+        {% else %}
+        <a class="nav-card {% if request.resolver_match.url_name == 'mis_incidencias' %}active{% endif %}" href="{% url 'mis_incidencias' %}">
+            <i class="bi bi-ticket-detailed"></i> Mis Incidencias
+        </a>
+        {% endif %}
+
+        <a class="nav-card {% if request.resolver_match.url_name == 'mi_perfil' %}active{% endif %}" href="{% url 'mi_perfil' %}">
+            <i class="bi bi-person-circle"></i> Mi Perfil
+        </a>
+
+        <div class="sidebar-divider"></div>
+
+        <a class="nav-card nav-card-danger" href="{% url 'logout' %}">
+            <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
+        </a>
+
+    </div>
+    {% endif %}
+
+    <div class="content-area {% if user.is_authenticated %}content-with-sidebar{% endif %}" id="contentArea">
+
+        {% if user.is_authenticated %}
+        <div class="app-topbar px-4 d-flex align-items-center">
+            <button class="topbar-toggle" onclick="toggleSidebar()">
+                <i class="bi bi-layout-sidebar" id="toggleIcon"></i>
+            </button>
+            <div class="topbar-right ms-auto d-flex align-items-center">{% include 'tickets/partials/notification_bell.html' %}</div>
+        </div>
+        {% endif %}
+
+        <div class="content-body">
+            <div class="container-fluid">
+                {% block header_title %}{% endblock %}
+            </div>
+
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+
+    <audio id="notif-sound" src="{% static 'sounds/notificacion.mp3' %}" preload="auto"></audio>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <div id="django-messages-container" style="display:none;">
+        {% for message in messages %}
+        <span class="django-msg" data-level="{{ message.tags }}" data-text="{{ message|escapejs }}"></span>
+        {% endfor %}
+    </div>
+
+    <script>
+        // 🛡️ Inicialización de contadores
+        window.oldNotificationCount = parseInt(document.querySelector('#notif-badge-container .badge')?.textContent || "0");
+
+        document.addEventListener('DOMContentLoaded', function () {
+            // 🔔 Toast mensajes Django
+            document.querySelectorAll('.django-msg').forEach(el => {
+                const level = el.dataset.level;
+                const text = el.dataset.text;
+                let icon = 'info';
+                if (level.includes('success')) icon = 'success';
+                else if (level.includes('error')) icon = 'error';
+
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: icon,
+                    title: text,
+                    showConfirmButton: false,
+                    timer: 4000
+                });
+            });
+        });
+
+        // 🔔 NOTIFICACIONES EN TIEMPO REAL (HTMX)
+        document.body.addEventListener("htmx:afterSwap", function(event) {
+            // Detectamos cuando se actualiza el BADGE (vía OOB)
+            if (event.detail.target.id === "notif-badge-container") {
+                const badge = event.detail.target.querySelector(".badge");
+                const newCount = badge ? parseInt(badge.textContent.trim()) : 0;
+
+                if (newCount > window.oldNotificationCount) {
+                    // 🔊 Reproducir Sonido
+                    const sound = document.getElementById("notif-sound");
+                    if (sound) {
+                        sound.currentTime = 0;
+                        sound.play().catch(() => console.log("Interacción requerida para sonido"));
+                    }
+
+                    // 📢 Mostrar Toast con el texto de la notificación más reciente
+                    const firstNotif = document.querySelector("#notifications-list p");
+                    const text = firstNotif ? firstNotif.innerText.trim().substring(0, 80) : "Nueva notificación";
+
+                    Swal.fire({
+                        toast: true,
+                        position: "top-end",
+                        icon: "info",
+                        title: "🔔 Nueva actividad",
+                        text: text + "...",
+                        showConfirmButton: false,
+                        timer: 5000,
+                        timerProgressBar: true
+                    });
+                }
+                window.oldNotificationCount = newCount;
+            }
+        });
+
+        // Configuración global de HTMX para enviar el token CSRF en todas las peticiones POST
+        document.body.addEventListener('htmx:configRequest', (event) => {
+            event.detail.headers['X-CSRFToken'] = '{{ csrf_token }}';
+        });
+
+        // Función Sidebar
+        function toggleSidebar() {
+            const sidebar = document.getElementById('appSidebar');
+            const content = document.getElementById('contentArea');
+
+            if (sidebar && content) {
+                sidebar.classList.toggle('collapsed');
+                content.classList.toggle('expanded');
+            }
+        }
+
+        // 🔥 INTERCEPTOR DE CONFIRMACIÓN PARA HTMX (SweetAlert2)
+document.addEventListener("htmx:confirm", function(e) {
+    // Solo interceptar si el elemento tiene hx-confirm (como tu botón de confirmar)
+    if (e.target.hasAttribute("hx-confirm")) {
+        e.preventDefault(); // Detenemos el alert feo del navegador
+
+        Swal.fire({
+                    title: '¿Confirmar Solución?',
+                    text: e.target.getAttribute("hx-confirm"), // Extrae el texto que ya pusiste en el HTML
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#16a34a', // El verde de tu éxito
+                    cancelButtonColor: '#64748b',  // El gris de tu secundario
+                    confirmButtonText: '<i class="bi bi-check-lg"></i> Sí, confirmar',
+                    cancelButtonText: 'Cancelar',
+                    reverseButtons: true,
+                    customClass: {
+                        popup: 'rounded-4 shadow-lg',
+                        confirmButton: 'rounded-pill px-4',
+                        cancelButton: 'rounded-pill px-4'
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        e.detail.issueRequest(); // Si acepta, HTMX continúa la petición
+                    }
+                });
+            }
+        });
+
+    </script>
+    <script>
+        /* 🔥 LIGHTBOX GLOBAL (compatible con HTMX) */
+        document.addEventListener("click", function(e) {
+
+            // Abrir imagen
+            const trigger = e.target.closest(".lightbox-trigger");
+            if (trigger) {
+                const src = trigger.dataset.src || trigger.src;
+
+                const lightbox = document.getElementById("lightbox");
+                const img = document.getElementById("lightbox-img");
+
+                if (lightbox && img) {
+                    img.src = src;
+                    lightbox.style.display = "flex";
+                }
+            }
+
+            // Cerrar al hacer click fuera
+            if (e.target.id === "lightbox") {
+                document.getElementById("lightbox").style.display = "none";
+            }
+
+            // Cerrar con X
+            if (e.target.classList.contains("lightbox-close")) {
+                document.getElementById("lightbox").style.display = "none";
+            }
+        });
+
+        // Cerrar con ESC
+        document.addEventListener("keydown", function(e) {
+            if (e.key === "Escape") {
+                const lightbox = document.getElementById("lightbox");
+                if (lightbox) lightbox.style.display = "none";
+            }
+        });
+        </script>
+    {% block extra_js %}{% endblock %}
+
+        <div id="lightbox" class="lightbox" style="display: none;">
+            <span class="lightbox-close" style="cursor: pointer;">&times;</span>
+            <img id="lightbox-img" class="lightbox-content">
+        </div>
+</body>
+</html>

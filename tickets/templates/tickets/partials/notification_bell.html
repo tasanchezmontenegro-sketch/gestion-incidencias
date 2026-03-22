@@ -1,0 +1,54 @@
+<style>
+    /* Estilo para resaltar notificaciones nuevas sin errores de editor */
+    .notif-nueva {
+        background-color: rgba(13, 110, 253, 0.08) !important;
+        border-left: 4px solid #0d6efd !important;
+    }
+    /* Mejora visual para el scroll */
+    #notifications-container::-webkit-scrollbar {
+        width: 6px;
+    }
+    #notifications-container::-webkit-scrollbar-thumb {
+        background: #ccc;
+        border-radius: 10px;
+    }
+</style>
+
+<div id="notif-wrapper" class="dropdown">
+    <a href="#" class="topbar-btn position-relative" id="dropdownNotification" 
+       data-bs-toggle="dropdown" aria-expanded="false">
+        <i class="bi bi-bell" style="font-size: 1.2rem;"></i>
+        
+        <div id="notif-badge-container">
+            {% if unread_notifications_count > 0 %}
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger animate__animated animate__pulse animate__infinite">
+                {{ unread_notifications_count }}
+            </span>
+            {% endif %}
+        </div>
+    </a>
+
+    <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-2 py-0" 
+        id="notifications-container"
+        style="width: 350px; max-height: 450px; overflow-y: auto; z-index: 1050;"
+        hx-get="/notifications/unread_count/" 
+        hx-trigger="revealed, every 5s"
+        hx-target="this"
+        hx-swap="innerHTML"
+        hx-sync="this:replace">
+        
+        {% include 'tickets/partials/notification_list.html' %}
+    </ul>
+</div>
+
+<script>
+    (function() {
+        const count = parseInt("{{ unread_notifications_count|default:0 }}");
+        const lastCount = parseInt(sessionStorage.getItem('lastNotifCount') || "0");
+        if (count > lastCount) {
+            const audio = new Audio("/static/sounds/notificacion.mp3");
+            audio.play().catch(() => {});
+        }
+        sessionStorage.setItem('lastNotifCount', count);
+    })();
+</script>

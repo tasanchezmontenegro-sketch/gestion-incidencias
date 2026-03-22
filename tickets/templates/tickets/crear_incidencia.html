@@ -1,0 +1,424 @@
+{% extends 'tickets/base.html' %}
+{% load static %}
+
+{% block title %}Crear Incidencia - UGEL Morropón{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/crear_incidencia.css' %}">
+    <style>
+        /* Estilos para estados bloqueados */
+        .locked-field input, .locked-field select, .locked-field textarea {
+            background-color: #f8f9fa !important;
+            color: #6c757d !important;
+            cursor: not-allowed !important;
+            border-color: #dee2e6 !important;
+        }
+        #file-name-preview { position: relative; z-index: 10; }
+        #file-name-preview button { pointer-events: auto !important; }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="page-header mb-4">
+        <div class="d-flex align-items-center gap-3">
+            <div class="header-icon shadow-sm">
+                <i class="bi bi-plus-lg"></i>
+            </div>
+            <div>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-1" style="font-size: 0.78rem;">
+                        <li class="breadcrumb-item"><a href="#" class="text-decoration-none text-muted">Tickets</a></li>
+                        <li class="breadcrumb-item active">Nueva Incidencia</li>
+                    </ol>
+                </nav>
+                <h2 class="page-title mb-0">Reportar Incidencia</h2>
+            </div>
+        </div>
+    </div>
+
+    <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate id="incidencia-form">
+        {% csrf_token %}
+
+        <div class="form-layout">
+            <div class="form-main">
+                <div class="app-card">
+                    <div class="form-section">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div class="form-section-title" style="margin-bottom:0;">
+                                <div class="form-section-icon"><i class="bi bi-tag"></i></div>
+                                Tipo de problema
+                            </div>
+                            {% if incidencia.id %}
+                            <button type="button" class="btn btn-sm btn-outline-secondary" id="btn-unlock-report" onclick="toggleReportEdit()">
+                                <i class="bi bi-pencil-square"></i> Editar datos originales
+                            </button>
+                            {% endif %}
+                        </div>
+                        
+                        <div style="display:none;">{{ form.categoria }}</div>
+                        <div class="category-chips locked-group" id="category-chips-group">
+                            {% for value, label in form.categoria.field.choices %}
+                                {% if value %}
+                                <span class="category-chip" data-value="{{ value }}" onclick="selectChip(this, 'id_categoria')">
+                                    {{ label }}
+                                </span>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="form-section" id="area-priority-section">
+                        <div class="form-section-title">
+                            <div class="form-section-icon"><i class="bi bi-building"></i></div>
+                            Área y prioridad
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label class="info-label">Área o departamento</label>
+                                <div class="input-group-app locked-field">{{ form.area }}</div>
+                            </div>
+                            <div class="col-12">
+                                <label class="info-label text-danger">Nivel de prioridad</label>
+                                <div style="display:none;">{{ form.prioridad }}</div>
+                                <div class="priority-cards locked-group" id="priority-cards-group">
+                                    <div class="priority-card" data-value="critica" onclick="selectPriority(this, 'id_prioridad')">
+                                        <div class="prio-dot"></div><span class="prio-name">Crítica</span>
+                                    </div>
+                                    <div class="priority-card" data-value="alta" onclick="selectPriority(this, 'id_prioridad')">
+                                        <div class="prio-dot"></div><span class="prio-name">Alta</span>
+                                    </div>
+                                    <div class="priority-card" data-value="media" onclick="selectPriority(this, 'id_prioridad')">
+                                        <div class="prio-dot"></div><span class="prio-name">Media</span>
+                                    </div>
+                                    <div class="priority-card" data-value="baja" onclick="selectPriority(this, 'id_prioridad')">
+                                        <div class="prio-dot"></div><span class="prio-name">Baja</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <div class="form-section-title">
+                            <div class="form-section-icon"><i class="bi bi-pencil-square"></i></div>
+                            Descripción del problema
+                        </div>
+                        <label class="info-label">Describe el suceso con detalle</label>
+                        <div class="input-group-app locked-field">{{ form.descripcion }}</div>
+                    </div>
+
+                    <div class="form-section">
+                        <div class="form-section-title">
+                            <div class="form-section-icon"><i class="bi bi-image"></i></div>
+                            Evidencia fotográfica <span class="ms-1 text-muted fw-normal" style="font-size:0.7rem;">(opcional)</span>
+                        </div>
+                        <div class="evidence-zone" id="evidence-zone">
+                            {{ form.imagen_adjunta }}
+                            <div class="evidence-zone-icon"><i class="bi bi-cloud-upload"></i></div>
+                            <div class="evidence-zone-text">
+                                <strong>Haz clic o arrastra tu archivo aquí</strong><br>
+                                PNG, JPG · Máx. 5MB
+                            </div>
+                            <div id="file-name-preview" class="mt-3" style="display:none;">
+                                <div class="preview-container mb-2">
+                                    <img id="image-preview-element" src="" alt="Vista previa" class="img-thumbnail shadow-sm">
+                                </div>
+                                <div class="d-flex align-items-center justify-content-center gap-2" style="font-size:0.8rem; color:var(--ink-soft);">
+                                    <i class="bi bi-paperclip"></i>
+                                    <span id="file-name-text"></span>
+                                    <button type="button" class="btn btn-sm btn-danger rounded-circle ms-2" style="width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; padding: 0;" onclick="removeFile(event)">
+                                        <i class="bi bi-x-lg" style="font-size: 0.7rem;"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {% if user.role == 'administrador' %}
+                <div class="admin-luxury-box mt-4">
+                    <div class="admin-luxury-header">
+                        <div class="form-section-title" style="margin-bottom:0;"><i class="bi bi-shield-lock"></i> Configuración de Ticket</div>
+                        <span class="badge bg-dark rounded-pill px-3" style="font-size:0.68rem;">Acceso Staff</span>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="info-label">Técnico Responsable</label>
+                            <div class="input-group-app">{{ form.tecnico_asignado }}</div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="info-label">Fecha Programada</label>
+                            <div class="input-group-app">{{ form.fecha_programada_atencion }}</div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="info-label">Hora Programada</label>
+                            <div class="input-group-app">{{ form.hora_programada_atencion }}</div>
+                        </div>
+                        <div class="col-12">
+                            <label class="info-label">Notas de Gestión (Interno)</label>
+                            <div class="input-group-app">{{ form.observaciones_internas }}</div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="form-actions-bar">
+                    <a href="javascript:history.back()" class="btn btn-link text-muted text-decoration-none fw-bold ps-0"><i class="bi bi-chevron-left"></i> Volver atrás</a>
+                    <button type="submit" id="submit-btn" class="btn-new shadow px-4 py-2 d-flex align-items-center gap-2" disabled style="opacity: 0.5; cursor: not-allowed;">
+                        <span id="btn-text">{% if es_admin %}Crear y Asignar{% else %}Enviar Incidencia{% endif %}</span>
+                        <i class="bi bi-arrow-right-short fs-5"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="form-sidebar">
+                <div class="progress-card">
+                    <div class="sidebar-section">
+                        <div class="sidebar-section-title">Progreso del formulario</div>
+                        
+                        <div class="progress-step" id="step-categoria">
+                            <div class="progress-step-dot pending"></div>
+                            <span class="progress-step-label pending">Tipo de problema</span>
+                        </div>
+                        
+                        <div class="progress-step" id="step-area">
+                            <div class="progress-step-dot pending"></div>
+                            <span class="progress-step-label pending">Área seleccionada</span>
+                        </div>
+                        
+                        <div class="progress-step" id="step-prioridad">
+                            <div class="progress-step-dot pending"></div>
+                            <span class="progress-step-label pending">Prioridad definida</span>
+                        </div>
+                        
+                        <div class="progress-step" id="step-descripcion">
+                            <div class="progress-step-dot pending"></div>
+                            <span class="progress-step-label pending">Descripción</span>
+                        </div>
+                        
+                        <div class="progress-step" id="step-imagen">
+                            <div class="progress-step-dot pending"></div>
+                            <span class="progress-step-label pending">Evidencia (opcional)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tips-card mt-3">
+                    <div class="sidebar-section">
+                        <div class="sidebar-section-title">
+                            <i class="bi bi-lightbulb text-warning me-2"></i>Consejos rápidos
+                        </div>
+                        
+                        <div class="tip-item">
+                            <div class="tip-num">1</div>
+                            <div class="tip-text"><b>Sé específico:</b> Indica si el error es en un software o un equipo físico.</div>
+                        </div>
+
+                        <div class="tip-item">
+                            <div class="tip-num">2</div>
+                            <div class="tip-text"><b>Evidencia:</b> Una captura de pantalla ayuda al técnico a diagnosticar 50% más rápido.</div>
+                        </div>
+
+                        <div class="tip-item">
+                            <div class="tip-num">3</div>
+                            <div class="tip-text"><b>Urgencia:</b> Usa la prioridad "Crítica" solo si el trabajo está detenido.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+/* ============================================================
+   LÓGICA DE ARCHIVOS Y COMPRESIÓN
+   ============================================================ */
+function removeFile(event) {
+    if (event) { event.preventDefault(); event.stopPropagation(); }
+    const fileInput = document.querySelector('#evidence-zone input[type="file"]');
+    const previewDiv = document.getElementById('file-name-preview');
+    if (fileInput) {
+        fileInput.value = ""; 
+        if (previewDiv) previewDiv.style.display = 'none';
+        updateProgress('step-imagen', false);
+        validarFormulario(); // Validar al quitar archivo si fuera necesario
+    }
+}
+
+async function compressImage(file, maxWidth = 1200, quality = 0.7) {
+    if (!file.type.startsWith('image/')) return file;
+    return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = event => {
+            const img = new Image();
+            img.src = event.target.result;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                let width = img.width, height = img.height;
+                if (width > maxWidth) { height = Math.round((height * maxWidth) / width); width = maxWidth; }
+                canvas.width = width; canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                ctx.canvas.toBlob((blob) => {
+                    resolve(new File([blob], file.name.replace(/\.\w+$/, ".jpg"), {type: 'image/jpeg'}));
+                }, 'image/jpeg', quality);
+            };
+        };
+    });
+}
+
+/* ============================================================
+   BLOQUEO INTELIGENTE (ADMIN)
+   ============================================================ */
+function setFieldsLock(shouldLock) {
+    const selectors = 'input, select, textarea';
+    document.querySelectorAll('.locked-field').forEach(div => {
+        div.querySelectorAll(selectors).forEach(el => el.disabled = shouldLock);
+    });
+    document.querySelectorAll('.locked-group').forEach(group => {
+        group.style.pointerEvents = shouldLock ? 'none' : 'auto';
+        group.style.opacity = shouldLock ? '0.7' : '1';
+    });
+}
+
+/* ============================================================
+   UI, EVENTOS Y VALIDACIÓN
+   ============================================================ */
+function validarFormulario() {
+    // IMPORTANTE: El ID del botón debe coincidir con el del HTML (submit-btn)
+    const btn = document.getElementById('submit-btn');
+    if (!btn) return;
+
+    const categoria = document.getElementById('id_categoria')?.value;
+    const area = document.getElementById('id_area')?.value;
+    const prioridad = document.getElementById('id_prioridad')?.value;
+    const descripcion = document.getElementById('id_descripcion')?.value.trim();
+    
+    // Validación de técnico solo si el campo existe (Admin)
+    const campoTecnico = document.getElementById('id_tecnico_asignado');
+    const tecnicoOk = campoTecnico ? campoTecnico.value !== "" : true;
+
+    // Condición de éxito
+    const esValido = categoria && area && prioridad && descripcion.length >= 10 && tecnicoOk;
+
+    // Aplicar cambios al botón
+    btn.disabled = !esValido;
+    btn.style.opacity = esValido ? "1" : "0.5";
+    btn.style.cursor = esValido ? "pointer" : "not-allowed";
+}
+
+function selectChip(el, selectId) {
+    document.querySelectorAll('#category-chips-group .category-chip').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    const input = document.getElementById(selectId);
+    if(input) {
+        input.value = el.dataset.value;
+        input.dispatchEvent(new Event('change')); // Notificar cambio
+    }
+    updateProgress('step-categoria', true);
+    validarFormulario();
+}
+
+function selectPriority(el, selectId) {
+    document.querySelectorAll('#priority-cards-group .priority-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    const input = document.getElementById(selectId);
+    if(input) {
+        input.value = el.dataset.value;
+        input.dispatchEvent(new Event('change')); // Notificar cambio
+    }
+    updateProgress('step-prioridad', true);
+    validarFormulario();
+}
+
+function updateProgress(stepId, isDone) {
+    const step = document.getElementById(stepId);
+    if (!step) return;
+    const dot = step.querySelector('.progress-step-dot');
+    const label = step.querySelector('.progress-step-label');
+    dot.className = isDone ? 'progress-step-dot done' : 'progress-step-dot pending';
+    label.className = isDone ? 'progress-step-label done' : 'progress-step-label pending';
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    // 1. Bloqueo inicial si es edición
+    if ("{{ incidencia.id|default:'' }}") setFieldsLock(true);
+
+    // 2. Escuchar cambios para validación
+    const form = document.getElementById('incidencia-form');
+    if (form) {
+        form.addEventListener('input', validarFormulario);
+        form.addEventListener('change', validarFormulario);
+    }
+
+    // 3. Manejo de archivos
+    const fileInput = document.querySelector('#evidence-zone input[type="file"]');
+    if (fileInput) {
+        fileInput.addEventListener('change', function () {
+            const file = this.files[0];
+            if (!file) return;
+
+            const allowed = ['image/jpeg', 'image/png', 'application/pdf'];
+            if (!allowed.includes(file.type)) {
+                Swal.fire('Error', 'Solo JPG, PNG o PDF.', 'error');
+                this.value = ''; return;
+            }
+
+            document.getElementById('file-name-text').textContent = file.name;
+            document.getElementById('file-name-preview').style.display = 'block';
+            
+            if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    document.getElementById('image-preview-element').src = e.target.result;
+                    document.getElementById('image-preview-element').parentElement.style.display = 'flex';
+                };
+                reader.readAsDataURL(file);
+            } else {
+                document.getElementById('image-preview-element').parentElement.style.display = 'none';
+            }
+            updateProgress('step-imagen', true);
+        });
+    }
+
+    // 4. Envío con Compresión
+    form.addEventListener('submit', async function(e) {
+        if (!form.checkValidity()) return;
+        
+        e.preventDefault();
+        const btn = document.getElementById('submit-btn');
+        const btnText = document.getElementById('btn-text');
+        
+        btn.disabled = true; // Evitar doble clic
+        btn.classList.add('loading');
+        if(btnText) btnText.textContent = "Procesando...";
+
+        if (fileInput && fileInput.files[0] && fileInput.files[0].type.startsWith('image/')) {
+            const compressed = await compressImage(fileInput.files[0]);
+            const dt = new DataTransfer();
+            dt.items.add(compressed);
+            fileInput.files = dt.files;
+        }
+        form.submit();
+    });
+
+    // 5. Progreso inicial y validación inicial
+    document.getElementById('id_area')?.addEventListener('change', function() { updateProgress('step-area', this.value !== ''); });
+    document.getElementById('id_descripcion')?.addEventListener('input', function() { updateProgress('step-descripcion', this.value.trim().length >= 10); });
+    
+    // EJECUTAR AL CARGAR PARA ACTIVAR/DESACTIVAR BOTÓN SEGÚN DATOS PREVIOS
+    validarFormulario();
+
+        // Marcar progreso inicial si ya hay datos
+    if (document.getElementById('id_categoria')?.value) updateProgress('step-categoria', true);
+    if (document.getElementById('id_area')?.value) updateProgress('step-area', true);
+    if (document.getElementById('id_prioridad')?.value) updateProgress('step-prioridad', true);
+    if (document.getElementById('id_descripcion')?.value.length >= 10) updateProgress('step-descripcion', true);
+});
+</script>
+{% endblock %}
