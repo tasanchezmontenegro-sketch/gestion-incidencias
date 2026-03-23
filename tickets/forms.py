@@ -1,10 +1,7 @@
-from dataclasses import field
-
 from django import forms
 from django.contrib.auth.forms import UserChangeForm, PasswordChangeForm, UserCreationForm
 from .models import CustomUser, Incidencia
 
-# 1. FORMULARIO DE PERFIL
 # 1. FORMULARIO DE PERFIL (Para que el usuario edite sus propios datos)
 class CustomUserChangeForm(UserChangeForm):
     password = None 
