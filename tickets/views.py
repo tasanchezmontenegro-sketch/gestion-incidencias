@@ -1,19 +1,15 @@
 import os, io
-from datetime import datetime
-
 # Django Core
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.staticfiles import finders
-from django.urls import reverse
 from django.utils import timezone
-from django.http import HttpResponse, FileResponse
+from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.core.paginator import Paginator
-from django.template.loader import get_template, render_to_string
+from django.template.loader import render_to_string
 
 # Django Auth
-from django.contrib.auth import authenticate, login, logout, update_session_auth_hash, get_user_model
+from django.contrib.auth import login, logout, update_session_auth_hash, get_user_model
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
 
@@ -26,6 +22,7 @@ from weasyprint import HTML
 # Apps Locales
 from .models import Incidencia, CustomUser, Estado, Area, Comentario, Notificacion
 from .forms import CustomUserChangeForm, IncidenciaForm, IncidenciaAdminForm
+# AQUÍ ESTÁ LO IMPORTANTE:
 from .services import resolver_incidencia_service, cerrar_incidencia_service
 
 
@@ -662,49 +659,34 @@ def resolver_incidencia(request, pk):
         solucion = request.POST.get('solucion_aplicada', '').strip()
         evidencia = request.FILES.get('evidencia_solucion')
 
-        # 2. Validación de contenido
+        # 2. Validaciones de formulario
         if not solucion or len(solucion) < 10:
             messages.warning(request, "Por favor, detalle mejor la solución (mínimo 10 caracteres).")
             return redirect('detalle_incidencia', pk=pk)
 
-        # 3. Validación de Imagen
-        if evidencia:
-            if evidencia.name.lower().endswith('.pdf') or not evidencia.content_type.startswith('image/'):
-                messages.error(request, "⚠️ Error: No se pueden subir archivos PDF. Use una imagen (JPG o PNG).")
-                return redirect('detalle_incidencia', pk=pk)
-            incidencia.evidencia_solucion = evidencia
+        if evidencia and not evidencia.content_type.startswith('image/'):
+            messages.error(request, "⚠️ Error: El archivo debe ser una imagen (JPG o PNG).")
+            return redirect('detalle_incidencia', pk=pk)
 
-        # 4. Actualización de datos e Historial
-        incidencia.solucion_aplicada = solucion
-        estado_resuelto = Estado.objects.filter(name__iexact='Resuelto').first()
-        if estado_resuelto:
-            incidencia.estado = estado_resuelto
+        # 3. Guardar campos (CORREGIDO: Ahora están bien indentados)
+        if evidencia:
+            incidencia.evidencia_solucion = evidencia
         
+        incidencia.solucion_aplicada = solucion
         incidencia.save()
 
-        # 5. Crear Comentario de tipo "confirmacion" para el historial
-        Comentario.objects.create(
-            incidencia=incidencia,
-            usuario=request.user,
-            tipo_comentario="confirmacion",
-            texto=f"Resolución marcada: {solucion}",
-            evidencia_adjunta=evidencia if evidencia else None
-        )
-
-        # 6. NOTIFICAR A LOS ADMINISTRADORES
-        admins = CustomUser.objects.filter(role='administrador')
-        link_detalle = reverse('detalle_incidencia', kwargs={'pk': incidencia.id})
-        
-        for admin in admins:
-            Notificacion.objects.create(
-                usuario_destino=admin,
+        # 4. LLAMADA AL SERVICIO
+        try:
+            resolver_incidencia_service(
                 incidencia=incidencia,
-                mensaje=f"Ticket #{incidencia.id:04d} resuelto por {request.user.username}",
-                tipo="incidencia_resuelta",
-                link=link_detalle
+                tecnico=request.user,
+                solucion_aplicada=solucion,
+                evidencia=evidencia
             )
-
-        messages.success(request, '¡Incidencia resuelta! Se ha notificado al administrador.')
+            messages.success(request, '¡Incidencia resuelta! Se ha notificado a los responsables.')
+        except Exception as e:
+            messages.error(request, f"Error técnico al resolver: {str(e)}")
+            
         return redirect('detalle_incidencia', pk=pk)
             
     return redirect('detalle_incidencia', pk=pk)
